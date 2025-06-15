@@ -326,11 +326,9 @@ class _HomePageState extends State<HomePage> {
       print('Full AI Response: $aiResponse');
       print('=== PARSING DEBUG ===');
 
-
       List<String> lines = aiResponse.split('\n');
       List<Map<String, dynamic>> newQuestions = [];
       List<String> questionLines = [];
-
 
       // First, collect all lines that look like questions
       for (String line in lines) {
@@ -340,6 +338,7 @@ class _HomePageState extends State<HomePage> {
         }
       }
 
+      print('Found ${questionLines.length} potential question lines');
 
       // Now parse the collected question lines
       for (String line in questionLines) {
@@ -350,15 +349,12 @@ class _HomePageState extends State<HomePage> {
         }
       }
 
-
       print('Total questions parsed: ${newQuestions.length}');
-
 
       // If we got fewer questions than requested, try to parse again with a different strategy
       if (newQuestions.length < numberOfQuestions) {
         print('Got fewer questions than requested, trying alternative parsing');
         newQuestions.clear(); // Clear the previous attempts
-
 
         // Try splitting by double newlines first
         List<String> potentialQuestions = aiResponse.split('\n\n');
@@ -369,7 +365,6 @@ class _HomePageState extends State<HomePage> {
             newQuestions.add(parsedQuestion);
           }
         }
-
 
         // If still not enough, try splitting by single newlines
         if (newQuestions.length < numberOfQuestions) {
@@ -383,7 +378,6 @@ class _HomePageState extends State<HomePage> {
         }
       }
 
-
       // If we successfully parsed questions, replace the current ones
       if (newQuestions.isNotEmpty) {
         // Ensure we don't exceed the requested number of questions
@@ -391,6 +385,8 @@ class _HomePageState extends State<HomePage> {
           newQuestions = newQuestions.sublist(0, numberOfQuestions);
         }
 
+        print('Setting state with ${newQuestions.length} questions');
+        print('First question: ${newQuestions.first}');
 
         setState(() {
           scienceQuestions = newQuestions;
@@ -403,10 +399,10 @@ class _HomePageState extends State<HomePage> {
           showScoreSummary = false;
         });
 
+        print('State updated - showQuizArea: $showQuizArea, scienceQuestions.length: ${scienceQuestions.length}');
 
         // Clear chat history after successful question generation
         _clearChatHistory();
-
 
         // Show success message
         ScaffoldMessenger.of(context).showSnackBar(
@@ -418,12 +414,12 @@ class _HomePageState extends State<HomePage> {
         );
       } else {
         // If parsing failed, show error with more details
+        print('No questions were parsed successfully');
         setState(() {
           isWaitingForQuestions = false;
           showQuizArea =
               false; // Ensure we stay on configuration screen if parsing fails
         });
-
 
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
@@ -434,10 +430,11 @@ class _HomePageState extends State<HomePage> {
         );
       }
     } catch (e) {
+      print('Exception in parsing: $e');
       setState(() {
         isWaitingForQuestions = false;
+        showQuizArea = false;
       });
-      print('Exception in parsing: $e');
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
           content: Text('Error parsing questions: $e'),
@@ -520,14 +517,11 @@ class _HomePageState extends State<HomePage> {
       isWaitingForQuestions = true;
     });
 
-
     print('Generating $numberOfQuestions questions for: $selectedSubject');
-
 
     // Clear any previous questions and answers
     scienceQuestions.clear();
     answeredCorrectly.clear();
-
 
     _chatBloc.add(ChatGenerationNewTextMessageEvent(
         inputMessage:
@@ -535,8 +529,56 @@ class _HomePageState extends State<HomePage> {
             "Provide only the questions in this exact format, with no additional text or explanations. "
             "Ensure you provide exactly $numberOfQuestions questions."));
 
-
     print('Event added to ChatBloc');
+    
+    // Add a timeout fallback in case AI doesn't respond
+    Future.delayed(Duration(seconds: 30), () {
+      if (isWaitingForQuestions && scienceQuestions.isEmpty) {
+        print('AI response timeout, using fallback questions');
+        _generateFallbackQuestions();
+      }
+    });
+  }
+
+  void _generateFallbackQuestions() {
+    print('Generating fallback questions');
+    
+    List<Map<String, dynamic>> fallbackQuestions = [];
+    
+    // Generate sample questions based on selected subject
+    for (int i = 0; i < numberOfQuestions; i++) {
+      fallbackQuestions.add({
+        "question": "Sample $selectedSubject question ${i + 1}?",
+        "options": [
+          "Option A for question ${i + 1}",
+          "Option B for question ${i + 1}",
+          "Option C for question ${i + 1}",
+          "Option D for question ${i + 1}"
+        ],
+        "correct_answer": "Option A for question ${i + 1}"
+      });
+    }
+    
+    setState(() {
+      scienceQuestions = fallbackQuestions;
+      answeredCorrectly = List.filled(fallbackQuestions.length, false);
+      currentQuestionIndex = 0;
+      showAnswer = false;
+      selectedAnswer = null;
+      isWaitingForQuestions = false;
+      showQuizArea = true;
+      showScoreSummary = false;
+    });
+    
+    print('Fallback questions generated: ${fallbackQuestions.length}');
+    
+    ScaffoldMessenger.of(context).showSnackBar(
+      SnackBar(
+        content: Text('Using sample questions for testing. AI response may be delayed.'),
+        backgroundColor: Colors.orange,
+        duration: Duration(seconds: 3),
+      ),
+    );
   }
 
 
@@ -708,67 +750,96 @@ Please explain why the correct answer is "$correctAnswer" and provide a detailed
                         // Get the last message from the AI
                         final lastMessage = state.messages.last;
                         if (lastMessage.role == "model") {
+                          // Use a more reliable way to trigger parsing
                           WidgetsBinding.instance.addPostFrameCallback((_) {
+                            print('Parsing AI response: ${lastMessage.parts.first.text}');
                             _parseAndReplaceQuestions(
                                 lastMessage.parts.first.text);
                           });
                         }
                       }
-                      return ElevatedButton(
-                        onPressed:
-                            isWaitingForQuestions ? null : _generateQuestions,
-                        style: ElevatedButton.styleFrom(
-                          padding: EdgeInsets.zero,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          elevation: 6,
-                        ),
-                        child: Ink(
-                          decoration: BoxDecoration(
-                            gradient: LinearGradient(
-                              colors: [
-                                Color(0xFFFFD600), // Bright yellow
-                                Color(0xFFFF9800), // Bright orange
-                              ],
-                              begin: Alignment.topLeft,
-                              end: Alignment.bottomRight,
+                      
+                      // Add debug information
+                      print('Current state: showQuizArea=$showQuizArea, scienceQuestions.length=${scienceQuestions.length}');
+                      
+                      return Column(
+                        children: [
+                          ElevatedButton(
+                            onPressed:
+                                isWaitingForQuestions ? null : _generateQuestions,
+                            style: ElevatedButton.styleFrom(
+                              padding: EdgeInsets.zero,
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              elevation: 6,
                             ),
-                            borderRadius: BorderRadius.circular(12),
-                          ),
-                          child: Container(
-                            constraints:
-                                BoxConstraints(minWidth: 150, minHeight: 48),
-                            alignment: Alignment.center,
-                            child: isWaitingForQuestions
-                                ? Row(
-                                    mainAxisSize: MainAxisSize.min,
-                                    children: [
-                                      SizedBox(
-                                        width: 20,
-                                        height: 20,
-                                        child: CircularProgressIndicator(
+                            child: Ink(
+                              decoration: BoxDecoration(
+                                gradient: LinearGradient(
+                                  colors: [
+                                    Color(0xFFFFD600), // Bright yellow
+                                    Color(0xFFFF9800), // Bright orange
+                                  ],
+                                  begin: Alignment.topLeft,
+                                  end: Alignment.bottomRight,
+                                ),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Container(
+                                constraints:
+                                    BoxConstraints(minWidth: 150, minHeight: 48),
+                                alignment: Alignment.center,
+                                child: isWaitingForQuestions
+                                    ? Row(
+                                        mainAxisSize: MainAxisSize.min,
+                                        children: [
+                                          SizedBox(
+                                            width: 20,
+                                            height: 20,
+                                            child: CircularProgressIndicator(
+                                              color: Colors.white,
+                                              strokeWidth: 2,
+                                            ),
+                                          ),
+                                          SizedBox(width: 12),
+                                          Text("Generating...",
+                                              style: TextStyle(
+                                                  color: Colors.white,
+                                                  fontWeight: FontWeight.bold)),
+                                        ],
+                                      )
+                                    : Text(
+                                        "Start Quiz",
+                                        style: TextStyle(
                                           color: Colors.white,
-                                          strokeWidth: 2,
+                                          fontWeight: FontWeight.bold,
+                                          fontSize: 18,
                                         ),
                                       ),
-                                      SizedBox(width: 12),
-                                      Text("Generating...",
-                                          style: TextStyle(
-                                              color: Colors.white,
-                                              fontWeight: FontWeight.bold)),
-                                    ],
-                                  )
-                                : Text(
-                                    "Start Quiz",
-                                    style: TextStyle(
-                                      color: Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 18,
-                                    ),
-                                  ),
+                              ),
+                            ),
                           ),
-                        ),
+                          SizedBox(height: 12),
+                          // Debug button for testing
+                          ElevatedButton(
+                            onPressed: isWaitingForQuestions ? null : _generateFallbackQuestions,
+                            style: ElevatedButton.styleFrom(
+                              backgroundColor: Colors.grey.withOpacity(0.3),
+                              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                              shape: RoundedRectangleBorder(
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                            ),
+                            child: Text(
+                              "Test with Sample Questions",
+                              style: TextStyle(
+                                color: Colors.white70,
+                                fontSize: 12,
+                              ),
+                            ),
+                          ),
+                        ],
                       );
                     },
                   ),
@@ -785,13 +856,41 @@ Please explain why the correct answer is "$correctAnswer" and provide a detailed
 
 
   Widget _buildQuizArea() {
+    print('_buildQuizArea called - scienceQuestions.length: ${scienceQuestions.length}');
+    print('currentQuestionIndex: $currentQuestionIndex');
+    
     if (scienceQuestions.isEmpty) {
+      print('No questions available, showing loading indicator');
       return Center(
-        child: CircularProgressIndicator(),
+        child: Column(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            CircularProgressIndicator(),
+            SizedBox(height: 20),
+            Text(
+              'Loading questions...',
+              style: TextStyle(color: Colors.white, fontSize: 16),
+            ),
+            SizedBox(height: 10),
+            Text(
+              'If this takes too long, please try again',
+              style: TextStyle(color: Colors.white70, fontSize: 14),
+            ),
+          ],
+        ),
       );
     }
 
+    if (currentQuestionIndex >= scienceQuestions.length) {
+      print('currentQuestionIndex out of bounds, resetting to 0');
+      setState(() {
+        currentQuestionIndex = 0;
+      });
+    }
+
     final q = scienceQuestions[currentQuestionIndex];
+    print('Displaying question: ${q['question']}');
+    
     return Container(
       padding: const EdgeInsets.all(24),
       decoration: BoxDecoration(
@@ -865,7 +964,7 @@ Please explain why the correct answer is "$correctAnswer" and provide a detailed
               ),
             ),
             child: Text(
-              q['question'],
+              q['question'] ?? 'Question not available',
               style: const TextStyle(
                 fontSize: 20,
                 fontWeight: FontWeight.w600,
@@ -881,7 +980,7 @@ Please explain why the correct answer is "$correctAnswer" and provide a detailed
             child: Column(
               children: [
                 ...List.generate(
-                  q['options'].length,
+                  (q['options'] as List<dynamic>?)?.length ?? 0,
                   (i) => Padding(
                     padding: const EdgeInsets.only(bottom: 16),
                     child: Container(
@@ -949,7 +1048,7 @@ Please explain why the correct answer is "$correctAnswer" and provide a detailed
                             // Option text
                             Expanded(
                               child: Text(
-                                q['options'][i],
+                                q['options'][i] ?? 'Option not available',
                                 style: TextStyle(
                                   color: _getOptionTextColor(
                                     q['options'][i],
@@ -1318,7 +1417,6 @@ Please explain why the correct answer is "$correctAnswer" and provide a detailed
     );
   }
 }
-
 
 
 
