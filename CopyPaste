@@ -1642,7 +1642,7 @@ class _MainScreenState extends State<MainScreen> {
                     },
                     backgroundColor: Colors.orange,
                     icon: const Icon(Icons.quiz),
-                    label: const Text('Browse Sets'),
+                    label: const Text('Extra'),
                   ),
                   const SizedBox(height: 16),
                   FloatingActionButton.extended(
