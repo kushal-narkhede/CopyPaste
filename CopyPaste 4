@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'frq_manager.dart';
 import 'database_helper.dart';
+import 'premade_study_sets.dart';
 
 class MCQManager extends StatefulWidget {
   final String username;
@@ -2078,6 +2079,33 @@ class _MCQManagerState extends State<MCQManager> {
       ],
     },
   ];
+
+  @override
+  void initState() {
+    super.initState();
+    _syncWithPremadeStudySets();
+  }
+
+  void _syncWithPremadeStudySets() {
+    final premadeSets = PremadeStudySetsRepository.getPremadeSets();
+    for (final set in premadeSets) {
+      final alreadyExists = apClasses.any((cls) => cls['name'] == set.name);
+      if (!alreadyExists) {
+        apClasses.add({
+          'name': set.name,
+          'color': [Color(0xFF667eea), Color(0xFF764ba2)], // Default color
+          'icon': Icons.functions, // Default icon
+          'description': set.description,
+          'questions': set.questions.map((q) => {
+            'question': q.questionText,
+            'options': q.options,
+            'correct': q.options.indexOf(q.correctAnswer),
+            'explanation': '',
+          }).toList(),
+        });
+      }
+    }
+  }
 
   @override
   void dispose() {
