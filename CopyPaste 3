@@ -1,1425 +1,659 @@
-import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 
+class PremadeStudySet {
+  final String name;
+  final String description;
+  final String subject;
+  final List<Question> questions;
 
-import 'package:flutter_bloc/flutter_bloc.dart';
-import 'package:student_learning_app/bloc/chat_bloc.dart';
-import '../models/chat_message_model.dart';
-
-
-class HomePage extends StatefulWidget {
-  const HomePage({super.key});
-
-
-  @override
-  State<HomePage> createState() => _HomePageState();
+  PremadeStudySet({
+    required this.name,
+    required this.description,
+    required this.subject,
+    required this.questions,
+  });
 }
 
+class Question {
+  final String questionText;
+  final List<String> options;
+  final String correctAnswer;
 
-class _HomePageState extends State<HomePage> {
-  final TextEditingController followupController = TextEditingController();
-  final ScrollController _scrollController = ScrollController();
-  late final ChatBloc _chatBloc; // Create bloc instance here
+  Question({
+    required this.questionText,
+    required this.options,
+    required this.correctAnswer,
+  });
+}
 
+class PremadeStudySetsRepository {
+  static final List<PremadeStudySet> _premadeSets = [
+    // AP Calculus AB
+    PremadeStudySet(
+      name: 'AP Calculus AB',
+      description: 'Comprehensive review of AP Calculus AB concepts',
+      subject: 'Math',
+      questions: [
+        Question(
+          questionText: 'What is the derivative of f(x) = x²?',
+          options: ['2x', 'x²', '2', 'x'],
+          correctAnswer: '2x',
+        ),
+        Question(
+          questionText: 'What is the integral of 2x?',
+          options: ['x²', 'x² + C', '2x²', '2x² + C'],
+          correctAnswer: 'x² + C',
+        ),
+        Question(
+          questionText: 'What is the limit of sin(x)/x as x approaches 0?',
+          options: ['0', '1', 'undefined', 'infinity'],
+          correctAnswer: '1',
+        ),
+        Question(
+          questionText: 'What is the chain rule formula?',
+          options: [
+            'f(g(x))\' = f\'(g(x))g\'(x)',
+            'f(g(x))\' = f\'(x)g\'(x)',
+            'f(g(x))\' = f\'(x)g(x)',
+            'f(g(x))\' = f(x)g\'(x)'
+          ],
+          correctAnswer: 'f(g(x))\' = f\'(g(x))g\'(x)',
+        ),
+        Question(
+          questionText: 'What is the derivative of ln(x)?',
+          options: ['1/x', 'x', 'e^x', '1'],
+          correctAnswer: '1/x',
+        ),
+      ],
+    ),
 
-  int currentQuestionIndex = 0;
-  String? selectedAnswer;
-  bool isWaitingForQuestions = false;
+    // AP Calculus BC
+    PremadeStudySet(
+      name: 'AP Calculus BC',
+      description:
+          'Advanced calculus concepts including series and polar equations',
+      subject: 'Math',
+      questions: [
+        Question(
+          questionText: 'What is the Taylor series expansion of e^x?',
+          options: [
+            '1 + x + x²/2! + x³/3! + ...',
+            '1 - x + x²/2! - x³/3! + ...',
+            'x + x²/2 + x³/3 + ...',
+            '1 + x + x² + x³ + ...'
+          ],
+          correctAnswer: '1 + x + x²/2! + x³/3! + ...',
+        ),
+        Question(
+          questionText: 'What is the radius of convergence for a power series?',
+          options: [
+            'The distance from the center to the nearest point where the series diverges',
+            'The distance from the center to the farthest point where the series converges',
+            'The diameter of the convergence circle',
+            'The circumference of the convergence circle'
+          ],
+          correctAnswer:
+              'The distance from the center to the nearest point where the series diverges',
+        ),
+        Question(
+          questionText:
+              'What is the formula for the arc length of a polar curve?',
+          options: [
+            'L = ∫√(r² + (dr/dθ)²)dθ',
+            'L = ∫rdθ',
+            'L = ∫√(1 + (dr/dθ)²)dθ',
+            'L = ∫√(r² - (dr/dθ)²)dθ'
+          ],
+          correctAnswer: 'L = ∫√(r² + (dr/dθ)²)dθ',
+        ),
+        Question(
+          questionText: 'What is the ratio test for convergence?',
+          options: [
+            'If lim|aₙ₊₁/aₙ| < 1, the series converges',
+            'If lim|aₙ₊₁/aₙ| > 1, the series converges',
+            'If lim|aₙ₊₁/aₙ| = 1, the series converges',
+            'If lim|aₙ₊₁/aₙ| = 0, the series converges'
+          ],
+          correctAnswer: 'If lim|aₙ₊₁/aₙ| < 1, the series converges',
+        ),
+        Question(
+          questionText: 'What is the formula for the area of a polar region?',
+          options: ['A = 1/2∫r²dθ', 'A = ∫rdθ', 'A = 2∫rdθ', 'A = ∫r²dθ'],
+          correctAnswer: 'A = 1/2∫r²dθ',
+        ),
+      ],
+    ),
 
+    // AP Statistics
+    PremadeStudySet(
+      name: 'AP Statistics',
+      description: 'Statistical concepts and data analysis',
+      subject: 'Math',
+      questions: [
+        Question(
+          questionText:
+              'What is the difference between a parameter and a statistic?',
+          options: [
+            'A parameter describes a population, while a statistic describes a sample',
+            'A parameter describes a sample, while a statistic describes a population',
+            'A parameter is always larger than a statistic',
+            'A parameter is always smaller than a statistic'
+          ],
+          correctAnswer:
+              'A parameter describes a population, while a statistic describes a sample',
+        ),
+        Question(
+          questionText: 'What is the Central Limit Theorem?',
+          options: [
+            'The sampling distribution of the mean approaches a normal distribution as sample size increases',
+            'The mean of a sample equals the population mean',
+            'The standard deviation of a sample equals the population standard deviation',
+            'The sample size must be at least 30 for any statistical test'
+          ],
+          correctAnswer:
+              'The sampling distribution of the mean approaches a normal distribution as sample size increases',
+        ),
+        Question(
+          questionText: 'What is a Type I error?',
+          options: [
+            'Rejecting a true null hypothesis',
+            'Failing to reject a false null hypothesis',
+            'Accepting a true alternative hypothesis',
+            'Rejecting a false null hypothesis'
+          ],
+          correctAnswer: 'Rejecting a true null hypothesis',
+        ),
+        Question(
+          questionText:
+              'What is the formula for the standard error of the mean?',
+          options: ['σ/√n', 'σ/n', '√σ/n', 'n/σ'],
+          correctAnswer: 'σ/√n',
+        ),
+        Question(
+          questionText: 'What is the purpose of a confidence interval?',
+          options: [
+            'To estimate a population parameter with a certain level of confidence',
+            'To determine if a hypothesis test is significant',
+            'To calculate the standard deviation of a sample',
+            'To find the mean of a population'
+          ],
+          correctAnswer:
+              'To estimate a population parameter with a certain level of confidence',
+        ),
+      ],
+    ),
 
-  List<Map<String, dynamic>> scienceQuestions = [];
-  List<bool> answeredCorrectly =
-      []; // Track which questions were answered correctly
+    // AP Physics 1
+    PremadeStudySet(
+      name: 'AP Physics 1',
+      description: 'Algebra-based physics concepts',
+      subject: 'Science',
+      questions: [
+        Question(
+          questionText: 'What is Newton\'s First Law?',
+          options: [
+            'An object in motion stays in motion unless acted upon by an external force',
+            'Force equals mass times acceleration',
+            'For every action there is an equal and opposite reaction',
+            'Energy cannot be created or destroyed'
+          ],
+          correctAnswer:
+              'An object in motion stays in motion unless acted upon by an external force',
+        ),
+        Question(
+          questionText: 'What is the formula for kinetic energy?',
+          options: ['KE = 1/2mv²', 'KE = mgh', 'KE = mv', 'KE = ma'],
+          correctAnswer: 'KE = 1/2mv²',
+        ),
+        Question(
+          questionText: 'What is the SI unit of force?',
+          options: ['Newton', 'Joule', 'Watt', 'Pascal'],
+          correctAnswer: 'Newton',
+        ),
+        Question(
+          questionText: 'What is the formula for work?',
+          options: ['W = Fd', 'W = ma', 'W = mv', 'W = mgh'],
+          correctAnswer: 'W = Fd',
+        ),
+        Question(
+          questionText: 'What is the principle of conservation of energy?',
+          options: [
+            'Energy cannot be created or destroyed, only transformed',
+            'Energy can be created and destroyed',
+            'Energy always increases',
+            'Energy always decreases'
+          ],
+          correctAnswer:
+              'Energy cannot be created or destroyed, only transformed',
+        ),
+      ],
+    ),
 
+    // AP Physics 2
+    PremadeStudySet(
+      name: 'AP Physics 2',
+      description:
+          'Advanced physics concepts including fluids, thermodynamics, and electromagnetism',
+      subject: 'Science',
+      questions: [
+        Question(
+          questionText: 'What is Bernoulli\'s principle?',
+          options: [
+            'As the speed of a fluid increases, its pressure decreases',
+            'As the speed of a fluid increases, its pressure increases',
+            'As the speed of a fluid increases, its density decreases',
+            'As the speed of a fluid increases, its temperature decreases'
+          ],
+          correctAnswer:
+              'As the speed of a fluid increases, its pressure decreases',
+        ),
+        Question(
+          questionText: 'What is the first law of thermodynamics?',
+          options: [
+            'The change in internal energy equals heat added minus work done',
+            'Heat always flows from hot to cold',
+            'Energy cannot be created or destroyed',
+            'The entropy of the universe always increases'
+          ],
+          correctAnswer:
+              'The change in internal energy equals heat added minus work done',
+        ),
+        Question(
+          questionText: 'What is the formula for electric potential energy?',
+          options: ['U = kq₁q₂/r', 'U = qV', 'U = 1/2CV²', 'U = 1/2LI²'],
+          correctAnswer: 'U = kq₁q₂/r',
+        ),
+        Question(
+          questionText: 'What is the right-hand rule used for?',
+          options: [
+            'Determining the direction of magnetic force on a moving charge',
+            'Finding the direction of electric current',
+            'Calculating the magnitude of magnetic field',
+            'Determining the direction of electric field'
+          ],
+          correctAnswer:
+              'Determining the direction of magnetic force on a moving charge',
+        ),
+        Question(
+          questionText:
+              'What is the formula for the period of a simple pendulum?',
+          options: [
+            'T = 2π√(L/g)',
+            'T = 2π√(g/L)',
+            'T = 2π√(m/k)',
+            'T = 2π√(k/m)'
+          ],
+          correctAnswer: 'T = 2π√(L/g)',
+        ),
+      ],
+    ),
 
-  bool showAnswer = false;
-  bool showQuizArea = false;
-  bool showScoreSummary =
-      false; // New variable to control score summary visibility
-  String selectedSubject = "Chemistry";
-  int numberOfQuestions = 10; // New variable for question count
+    // AP Chemistry
+    PremadeStudySet(
+      name: 'AP Chemistry',
+      description: 'Advanced chemistry concepts and laboratory skills',
+      subject: 'Science',
+      questions: [
+        Question(
+          questionText: 'What is the ideal gas law?',
+          options: ['PV = nRT', 'PV = RT', 'P = nRT/V', 'V = nRT/P'],
+          correctAnswer: 'PV = nRT',
+        ),
+        Question(
+          questionText: 'What is Le Chatelier\'s principle?',
+          options: [
+            'A system at equilibrium will shift to counteract any change',
+            'The rate of a reaction is proportional to the concentration of reactants',
+            'The entropy of the universe always increases',
+            'Energy cannot be created or destroyed'
+          ],
+          correctAnswer:
+              'A system at equilibrium will shift to counteract any change',
+        ),
+        Question(
+          questionText: 'What is the Henderson-Hasselbalch equation?',
+          options: [
+            'pH = pKa + log([A⁻]/[HA])',
+            'pH = -log[H⁺]',
+            'pH = 14 - pOH',
+            'pH = pKa - log([A⁻]/[HA])'
+          ],
+          correctAnswer: 'pH = pKa + log([A⁻]/[HA])',
+        ),
+        Question(
+          questionText:
+              'What is the formula for calculating the equilibrium constant?',
+          options: [
+            'K = [products]/[reactants]',
+            'K = [reactants]/[products]',
+            'K = [products] - [reactants]',
+            'K = [products] + [reactants]'
+          ],
+          correctAnswer: 'K = [products]/[reactants]',
+        ),
+        Question(
+          questionText:
+              'What is the difference between a strong and weak acid?',
+          options: [
+            'Strong acids completely dissociate in water, weak acids partially dissociate',
+            'Strong acids have a higher pH than weak acids',
+            'Strong acids are more concentrated than weak acids',
+            'Strong acids have more hydrogen atoms than weak acids'
+          ],
+          correctAnswer:
+              'Strong acids completely dissociate in water, weak acids partially dissociate',
+        ),
+      ],
+    ),
 
+    // IB Mathematics HL
+    PremadeStudySet(
+      name: 'IB Mathematics HL',
+      description: 'Advanced mathematics concepts for IB Higher Level',
+      subject: 'Math',
+      questions: [
+        Question(
+          questionText: 'What is the complex conjugate of 3 + 4i?',
+          options: ['3 - 4i', '-3 + 4i', '-3 - 4i', '4 + 3i'],
+          correctAnswer: '3 - 4i',
+        ),
+        Question(
+          questionText: 'What is the modulus of a complex number?',
+          options: [
+            'The distance from the origin in the complex plane',
+            'The angle with the positive real axis',
+            'The real part of the number',
+            'The imaginary part of the number'
+          ],
+          correctAnswer: 'The distance from the origin in the complex plane',
+        ),
+        Question(
+          questionText: 'What is De Moivre\'s Theorem?',
+          options: [
+            '(cos θ + i sin θ)ⁿ = cos(nθ) + i sin(nθ)',
+            '(cos θ + i sin θ)ⁿ = cos(θⁿ) + i sin(θⁿ)',
+            '(cos θ + i sin θ)ⁿ = n(cos θ + i sin θ)',
+            '(cos θ + i sin θ)ⁿ = cos θ + i sin θ'
+          ],
+          correctAnswer: '(cos θ + i sin θ)ⁿ = cos(nθ) + i sin(nθ)',
+        ),
+        Question(
+          questionText:
+              'What is the formula for the nth term of a geometric sequence?',
+          options: [
+            'aₙ = a₁rⁿ⁻¹',
+            'aₙ = a₁ + (n-1)d',
+            'aₙ = a₁ + nd',
+            'aₙ = a₁rⁿ'
+          ],
+          correctAnswer: 'aₙ = a₁rⁿ⁻¹',
+        ),
+        Question(
+          questionText: 'What is the sum of an infinite geometric series?',
+          options: [
+            'S = a₁/(1-r) where |r| < 1',
+            'S = a₁/(1-r)',
+            'S = a₁(1-rⁿ)/(1-r)',
+            'S = a₁ + a₁r + a₁r² + ...'
+          ],
+          correctAnswer: 'S = a₁/(1-r) where |r| < 1',
+        ),
+      ],
+    ),
 
-  List<String> subjects = [
-    "Chemistry",
-    "Physics",
-    "Biology",
-    "Mathematics",
-    "History",
-    "Geography",
-    "Computer Science",
-    "Economics"
+    // IB Physics HL
+    PremadeStudySet(
+      name: 'IB Physics HL',
+      description: 'Advanced physics concepts for IB Higher Level',
+      subject: 'Science',
+      questions: [
+        Question(
+          questionText: 'What is the Heisenberg Uncertainty Principle?',
+          options: [
+            'It is impossible to know both position and momentum with perfect precision',
+            'It is impossible to measure energy and time simultaneously',
+            'It is impossible to observe quantum particles',
+            'It is impossible to predict quantum behavior'
+          ],
+          correctAnswer:
+              'It is impossible to know both position and momentum with perfect precision',
+        ),
+        Question(
+          questionText: 'What is the formula for relativistic energy?',
+          options: ['E = γmc²', 'E = mc²', 'E = 1/2mv²', 'E = hf'],
+          correctAnswer: 'E = γmc²',
+        ),
+        Question(
+          questionText: 'What is the principle of wave-particle duality?',
+          options: [
+            'Matter can exhibit both wave and particle properties',
+            'Waves can only behave as particles',
+            'Particles can only behave as waves',
+            'Waves and particles are completely separate phenomena'
+          ],
+          correctAnswer: 'Matter can exhibit both wave and particle properties',
+        ),
+        Question(
+          questionText: 'What is the formula for the de Broglie wavelength?',
+          options: ['λ = h/p', 'λ = hf', 'λ = c/f', 'λ = v/f'],
+          correctAnswer: 'λ = h/p',
+        ),
+        Question(
+          questionText: 'What is quantum tunneling?',
+          options: [
+            'A particle passing through a potential barrier it classically shouldn\'t be able to',
+            'A particle moving faster than light',
+            'A particle changing its quantum state',
+            'A particle splitting into two'
+          ],
+          correctAnswer:
+              'A particle passing through a potential barrier it classically shouldn\'t be able to',
+        ),
+      ],
+    ),
+
+    // IB Chemistry HL
+    PremadeStudySet(
+      name: 'IB Chemistry HL',
+      description: 'Advanced chemistry concepts for IB Higher Level',
+      subject: 'Science',
+      questions: [
+        Question(
+          questionText: 'What is the difference between SN1 and SN2 reactions?',
+          options: [
+            'SN1 is unimolecular and forms a carbocation, SN2 is bimolecular and has a transition state',
+            'SN1 is bimolecular and forms a carbocation, SN2 is unimolecular and has a transition state',
+            'SN1 is faster than SN2',
+            'SN1 only occurs with primary alcohols, SN2 with secondary'
+          ],
+          correctAnswer:
+              'SN1 is unimolecular and forms a carbocation, SN2 is bimolecular and has a transition state',
+        ),
+        Question(
+          questionText: 'What is the difference between E1 and E2 elimination?',
+          options: [
+            'E1 is unimolecular and forms a carbocation, E2 is bimolecular and has a transition state',
+            'E1 is bimolecular and forms a carbocation, E2 is unimolecular and has a transition state',
+            'E1 is faster than E2',
+            'E1 only occurs with primary alcohols, E2 with secondary'
+          ],
+          correctAnswer:
+              'E1 is unimolecular and forms a carbocation, E2 is bimolecular and has a transition state',
+        ),
+        Question(
+          questionText:
+              'What is the difference between a nucleophile and an electrophile?',
+          options: [
+            'A nucleophile donates electrons, an electrophile accepts electrons',
+            'A nucleophile accepts electrons, an electrophile donates electrons',
+            'A nucleophile is always negatively charged, an electrophile is always positively charged',
+            'A nucleophile is always a base, an electrophile is always an acid'
+          ],
+          correctAnswer:
+              'A nucleophile donates electrons, an electrophile accepts electrons',
+        ),
+        Question(
+          questionText:
+              'What is the difference between a primary, secondary, and tertiary alcohol?',
+          options: [
+            'Based on the number of carbon atoms attached to the carbon with the OH group',
+            'Based on the number of hydrogen atoms attached to the carbon with the OH group',
+            'Based on the number of OH groups in the molecule',
+            'Based on the total number of carbon atoms in the molecule'
+          ],
+          correctAnswer:
+              'Based on the number of carbon atoms attached to the carbon with the OH group',
+        ),
+        Question(
+          questionText:
+              'What is the difference between a reducing and oxidizing agent?',
+          options: [
+            'A reducing agent loses electrons, an oxidizing agent gains electrons',
+            'A reducing agent gains electrons, an oxidizing agent loses electrons',
+            'A reducing agent is always a metal, an oxidizing agent is always a non-metal',
+            'A reducing agent is always a base, an oxidizing agent is always an acid'
+          ],
+          correctAnswer:
+              'A reducing agent loses electrons, an oxidizing agent gains electrons',
+        ),
+      ],
+    ),
+
+    // AP Computer Science A
+    PremadeStudySet(
+      name: 'AP Computer Science A',
+      description: 'Java programming and computer science concepts',
+      subject: 'Computer Science',
+      questions: [
+        Question(
+          questionText:
+              'What is the difference between == and .equals() in Java?',
+          options: [
+            '== compares references, .equals() compares values',
+            '== compares values, .equals() compares references',
+            'They are exactly the same',
+            '== is for primitives, .equals() is for objects'
+          ],
+          correctAnswer: '== compares references, .equals() compares values',
+        ),
+        Question(
+          questionText: 'What is inheritance in Java?',
+          options: [
+            'A mechanism that allows a class to inherit properties and methods from another class',
+            'A way to create multiple instances of a class',
+            'A method to override existing functionality',
+            'A technique to hide implementation details'
+          ],
+          correctAnswer:
+              'A mechanism that allows a class to inherit properties and methods from another class',
+        ),
+        Question(
+          questionText: 'What is polymorphism?',
+          options: [
+            'The ability of an object to take many forms',
+            'The process of creating multiple copies of an object',
+            'The technique of hiding implementation details',
+            'The method of organizing code into packages'
+          ],
+          correctAnswer: 'The ability of an object to take many forms',
+        ),
+        Question(
+          questionText: 'What is an interface in Java?',
+          options: [
+            'A contract that defines a set of methods that a class must implement',
+            'A way to create multiple inheritance',
+            'A method to override existing functionality',
+            'A technique to hide implementation details'
+          ],
+          correctAnswer:
+              'A contract that defines a set of methods that a class must implement',
+        ),
+        Question(
+          questionText:
+              'What is the difference between ArrayList and LinkedList?',
+          options: [
+            'ArrayList is faster for random access, LinkedList is faster for insertions/deletions',
+            'ArrayList is faster for insertions/deletions, LinkedList is faster for random access',
+            'They are exactly the same',
+            'ArrayList can only store primitives, LinkedList can store objects'
+          ],
+          correctAnswer:
+              'ArrayList is faster for random access, LinkedList is faster for insertions/deletions',
+        ),
+      ],
+    ),
+
+    // IB Computer Science HL
+    PremadeStudySet(
+      name: 'IB Computer Science HL',
+      description: 'Advanced computer science concepts for IB Higher Level',
+      subject: 'Computer Science',
+      questions: [
+        Question(
+          questionText: 'What is the time complexity of binary search?',
+          options: ['O(log n)', 'O(n)', 'O(n log n)', 'O(n²)'],
+          correctAnswer: 'O(log n)',
+        ),
+        Question(
+          questionText: 'What is a binary search tree?',
+          options: [
+            'A tree data structure where each node has at most two children',
+            'A tree where all nodes have exactly two children',
+            'A tree where nodes are arranged in binary order',
+            'A tree where each level is filled before moving to the next'
+          ],
+          correctAnswer:
+              'A tree data structure where each node has at most two children',
+        ),
+        Question(
+          questionText: 'What is the difference between TCP and UDP?',
+          options: [
+            'TCP is connection-oriented and reliable, UDP is connectionless and unreliable',
+            'TCP is faster than UDP',
+            'UDP is more secure than TCP',
+            'TCP is for web traffic, UDP is for email'
+          ],
+          correctAnswer:
+              'TCP is connection-oriented and reliable, UDP is connectionless and unreliable',
+        ),
+        Question(
+          questionText: 'What is the purpose of a hash function?',
+          options: [
+            'To map data of arbitrary size to fixed-size values',
+            'To encrypt data',
+            'To compress data',
+            'To validate data integrity'
+          ],
+          correctAnswer: 'To map data of arbitrary size to fixed-size values',
+        ),
+        Question(
+          questionText: 'What is the difference between a stack and a queue?',
+          options: [
+            'Stack is LIFO, Queue is FIFO',
+            'Stack is FIFO, Queue is LIFO',
+            'Stack can only store integers, Queue can store any type',
+            'Stack is faster than Queue'
+          ],
+          correctAnswer: 'Stack is LIFO, Queue is FIFO',
+        ),
+      ],
+    ),
   ];
 
-
-  @override
-  void initState() {
-    super.initState();
-    _chatBloc = ChatBloc(); // Initialize bloc once
-    showQuizArea = false; // Ensure quiz area is not shown initially
-    showScoreSummary = false;
+  static List<PremadeStudySet> getPremadeSets() {
+    return List<PremadeStudySet>.from(_premadeSets);
   }
 
-
-  @override
-  void dispose() {
-    _scrollController.dispose();
-    _chatBloc.close(); // Don't forget to close the bloc
-    super.dispose();
+  static List<PremadeStudySet> getPremadeSetsBySubject(String subject) {
+    return _premadeSets.where((set) => set.subject == subject).toList();
   }
 
-
-  void goToNextQuestion() {
-    setState(() {
-      if (currentQuestionIndex + 1 >= scienceQuestions.length) {
-        // If we've reached the end, show score summary
-        showScoreSummary = true;
-        showQuizArea = false;
-      } else {
-        currentQuestionIndex = currentQuestionIndex + 1;
-        showAnswer = false;
-        selectedAnswer = null;
-      }
-    });
-  }
-
-
-  void _scrollToBottom() {
-    if (_scrollController.hasClients) {
-      _scrollController.animateTo(
-        _scrollController.position.maxScrollExtent,
-        duration: Duration(milliseconds: 300),
-        curve: Curves.easeOut,
-      );
-    }
-  }
-
-
-  // Function to clear chat history
-  void _clearChatHistory() {
-    _chatBloc.add(ChatClearHistoryEvent());
-    print('Chat history cleared');
-  }
-
-
-  // Function to show half-screen chat modal
-  void _showChatModal({String? initialMessage}) {
-    if (initialMessage != null) {
-      _chatBloc
-          .add(ChatGenerationNewTextMessageEvent(inputMessage: initialMessage));
-    }
-
-
-    showModalBottomSheet(
-      context: context,
-      backgroundColor: Colors.transparent,
-      isScrollControlled: true,
-      isDismissible: true,
-      builder: (BuildContext context) {
-        return DraggableScrollableSheet(
-          initialChildSize: 0.5,
-          minChildSize: 0.3,
-          maxChildSize: 0.9,
-          builder: (BuildContext context, ScrollController scrollController) {
-            return Container(
-              decoration: BoxDecoration(
-                color: Colors.grey[100],
-                borderRadius: BorderRadius.only(
-                  topLeft: Radius.circular(20),
-                  topRight: Radius.circular(20),
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: Colors.black.withOpacity(0.3),
-                    spreadRadius: 2,
-                    blurRadius: 10,
-                  )
-                ],
-              ),
-              child: Column(
-                children: [
-                  // Handle bar
-                  Container(
-                    margin: EdgeInsets.only(top: 8),
-                    width: 40,
-                    height: 4,
-                    decoration: BoxDecoration(
-                      color: Colors.grey[400],
-                      borderRadius: BorderRadius.circular(2),
-                    ),
-                  ),
-
-
-                  // Header
-                  Container(
-                    padding: EdgeInsets.all(16),
-                    child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                      children: [
-                        Text(
-                          "Chat with QuestAI",
-                          style: TextStyle(
-                            fontSize: 18,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.purple,
-                          ),
-                        ),
-                        Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            // Close button with better styling
-                            Container(
-                              decoration: BoxDecoration(
-                                color: Colors.red.withOpacity(0.1),
-                                borderRadius: BorderRadius.circular(20),
-                                border: Border.all(
-                                    color: Colors.red.withOpacity(0.3)),
-                              ),
-                              child: IconButton(
-                                onPressed: () => Navigator.pop(context),
-                                icon: Icon(Icons.close,
-                                    color: Colors.red[700], size: 20),
-                                padding: EdgeInsets.all(4),
-                                constraints: BoxConstraints(
-                                  minWidth: 32,
-                                  minHeight: 32,
-                                ),
-                                tooltip: "Close Chat",
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
-                  ),
-
-
-                  Divider(height: 1, color: Colors.grey[300]),
-
-
-                  // Chat messages area
-                  Expanded(
-                    child: BlocBuilder<ChatBloc, ChatState>(
-                      bloc: _chatBloc,
-                      builder: (context, state) {
-                        if (state is ChatSuccessState) {
-                          WidgetsBinding.instance.addPostFrameCallback((_) {
-                            _scrollToBottom();
-                          });
-                          return ListView.builder(
-                            controller: _scrollController,
-                            itemCount: state.messages.length,
-                            itemBuilder: (context, index) {
-                              final message = state.messages[index];
-                              return Container(
-                                margin: EdgeInsets.symmetric(vertical: 8),
-                                padding: EdgeInsets.all(12),
-                                alignment: message.role == "user"
-                                    ? Alignment.centerRight
-                                    : Alignment.centerLeft,
-                                child: Container(
-                                  constraints: BoxConstraints(
-                                    maxWidth:
-                                        MediaQuery.of(context).size.width *
-                                            0.75,
-                                  ),
-                                  padding: EdgeInsets.all(12),
-                                  decoration: BoxDecoration(
-                                    color: message.role == "user"
-                                        ? Colors.blue
-                                        : Colors.purple,
-                                    borderRadius: BorderRadius.circular(12),
-                                  ),
-                                  child: Text(
-                                    message.parts.first.text,
-                                    style: TextStyle(
-                                        color: Colors.white, fontSize: 16),
-                                  ),
-                                ),
-                              );
-                            },
-                          );
-                        } else if (state is ChatErrorState) {
-                          return Center(
-                            child: Text(
-                              state.message,
-                              style: TextStyle(color: Colors.red),
-                            ),
-                          );
-                        } else {
-                          return Center(
-                            child: CircularProgressIndicator(),
-                          );
-                        }
-                      },
-                    ),
-                  ),
-
-
-                  // Input area
-                  Container(
-                    padding: EdgeInsets.all(16),
-                    decoration: BoxDecoration(
-                      color: Colors.white,
-                      border: Border(top: BorderSide(color: Colors.grey[300]!)),
-                    ),
-                    child: Row(
-                      children: [
-                        Expanded(
-                          child: TextField(
-                            controller: followupController,
-                            style: TextStyle(color: Colors.black),
-                            decoration: InputDecoration(
-                              fillColor: Colors.grey[100],
-                              filled: true,
-                              hintText: "Ask something from QuestAI",
-                              border: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(25),
-                                borderSide: BorderSide(color: Colors.purple),
-                              ),
-                              focusedBorder: OutlineInputBorder(
-                                borderRadius: BorderRadius.circular(25),
-                                borderSide:
-                                    BorderSide(color: Colors.purple, width: 2),
-                              ),
-                              contentPadding: EdgeInsets.symmetric(
-                                  horizontal: 16, vertical: 12),
-                            ),
-                          ),
-                        ),
-                        SizedBox(width: 8),
-                        Container(
-                          decoration: BoxDecoration(
-                            color: Colors.purple,
-                            shape: BoxShape.circle,
-                          ),
-                          child: IconButton(
-                            onPressed: () {
-                              if (followupController.text.isNotEmpty) {
-                                _chatBloc.add(
-                                  ChatGenerationNewTextMessageEvent(
-                                    inputMessage: followupController.text,
-                                  ),
-                                );
-                                followupController.clear();
-                              }
-                            },
-                            icon: Icon(Icons.send, color: Colors.white),
-                            iconSize: 24,
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                ],
-              ),
-            );
-          },
-        );
-      },
-    );
-  }
-
-
-  // Function to parse AI response and extract questions
-  void _parseAndReplaceQuestions(String aiResponse) {
+  static PremadeStudySet? getPremadeSetByName(String name) {
     try {
-      print('Full AI Response: $aiResponse');
-      print('=== PARSING DEBUG ===');
-
-      List<String> lines = aiResponse.split('\n');
-      List<Map<String, dynamic>> newQuestions = [];
-      List<String> questionLines = [];
-
-      // First, collect all lines that look like questions
-      for (String line in lines) {
-        String trimmedLine = line.trim();
-        if (trimmedLine.startsWith('[') && trimmedLine.endsWith(']')) {
-          questionLines.add(trimmedLine);
-        }
-      }
-
-      print('Found ${questionLines.length} potential question lines');
-
-      // Now parse the collected question lines
-      for (String line in questionLines) {
-        Map<String, dynamic>? parsedQuestion = _parseBracketFormat(line);
-        if (parsedQuestion != null) {
-          newQuestions.add(parsedQuestion);
-          print('Successfully added question ${newQuestions.length}');
-        }
-      }
-
-      print('Total questions parsed: ${newQuestions.length}');
-
-      // If we got fewer questions than requested, try to parse again with a different strategy
-      if (newQuestions.length < numberOfQuestions) {
-        print('Got fewer questions than requested, trying alternative parsing');
-        newQuestions.clear(); // Clear the previous attempts
-
-        // Try splitting by double newlines first
-        List<String> potentialQuestions = aiResponse.split('\n\n');
-        for (String block in potentialQuestions) {
-          Map<String, dynamic>? parsedQuestion =
-              _parseBracketFormat(block.trim());
-          if (parsedQuestion != null) {
-            newQuestions.add(parsedQuestion);
-          }
-        }
-
-        // If still not enough, try splitting by single newlines
-        if (newQuestions.length < numberOfQuestions) {
-          for (String line in lines) {
-            Map<String, dynamic>? parsedQuestion =
-                _parseBracketFormat(line.trim());
-            if (parsedQuestion != null) {
-              newQuestions.add(parsedQuestion);
-            }
-          }
-        }
-      }
-
-      // If we successfully parsed questions, replace the current ones
-      if (newQuestions.isNotEmpty) {
-        // Ensure we don't exceed the requested number of questions
-        if (newQuestions.length > numberOfQuestions) {
-          newQuestions = newQuestions.sublist(0, numberOfQuestions);
-        }
-
-        print('Setting state with ${newQuestions.length} questions');
-        print('First question: ${newQuestions.first}');
-
-        setState(() {
-          scienceQuestions = newQuestions;
-          answeredCorrectly = List.filled(newQuestions.length, false);
-          currentQuestionIndex = 0; // Reset to first question
-          showAnswer = false;
-          selectedAnswer = null;
-          isWaitingForQuestions = false;
-          showQuizArea = true; // Show quiz area after questions are generated
-          showScoreSummary = false;
-        });
-
-        print('State updated - showQuizArea: $showQuizArea, scienceQuestions.length: ${scienceQuestions.length}');
-
-        // Clear chat history after successful question generation
-        _clearChatHistory();
-
-        // Show success message
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text(
-                'Successfully loaded ${newQuestions.length} new $selectedSubject questions!'),
-            backgroundColor: Colors.green,
-          ),
-        );
-      } else {
-        // If parsing failed, show error with more details
-        print('No questions were parsed successfully');
-        setState(() {
-          isWaitingForQuestions = false;
-          showQuizArea =
-              false; // Ensure we stay on configuration screen if parsing fails
-        });
-
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Failed to parse questions. Please try again.'),
-            backgroundColor: Colors.red,
-            duration: Duration(seconds: 5),
-          ),
-        );
-      }
+      return _premadeSets.firstWhere((set) => set.name == name);
     } catch (e) {
-      print('Exception in parsing: $e');
-      setState(() {
-        isWaitingForQuestions = false;
-        showQuizArea = false;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error parsing questions: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
-  }
-
-
-  Map<String, dynamic>? _parseBracketFormat(String line) {
-    try {
-      // Remove trailing comma if present
-      String cleanLine =
-          line.endsWith(',') ? line.substring(0, line.length - 1) : line;
-
-
-      // Remove [ and ] brackets
-      if (!cleanLine.startsWith('[') || !cleanLine.endsWith(']')) {
-        return null;
-      }
-
-
-      String content = cleanLine.substring(1, cleanLine.length - 1);
-
-
-      // Split by comma, but be careful with quoted strings
-      List<String> parts = [];
-      StringBuffer currentPart = StringBuffer();
-      bool inQuotes = false;
-
-
-      for (int i = 0; i < content.length; i++) {
-        String char = content[i];
-
-
-        if (char == '"') {
-          inQuotes = !inQuotes;
-          currentPart.write(char);
-        } else if (char == ',' && !inQuotes) {
-          parts.add(currentPart.toString().trim());
-          currentPart.clear();
-        } else {
-          currentPart.write(char);
-        }
-      }
-
-
-      // Add the last part
-      parts.add(currentPart.toString().trim());
-
-
-      // Clean each part (remove surrounding quotes if present)
-      for (int i = 0; i < parts.length; i++) {
-        if (parts[i].startsWith('"') && parts[i].endsWith('"')) {
-          parts[i] = parts[i].substring(1, parts[i].length - 1);
-        }
-      }
-
-
-      if (parts.length == 6) {
-        return {
-          "question": parts[0],
-          "options": [parts[1], parts[2], parts[3], parts[4]],
-          "correct_answer": parts[5]
-        };
-      } else {
-        print('Expected 6 parts but got ${parts.length}');
-        return null;
-      }
-    } catch (e) {
-      print('Error parsing bracket format: $e');
+      debugPrint('Error finding premade set: $e');
       return null;
     }
   }
-
-
-  void _generateQuestions() {
-    setState(() {
-      isWaitingForQuestions = true;
-    });
-
-    print('Generating $numberOfQuestions questions for: $selectedSubject');
-
-    // Clear any previous questions and answers
-    scienceQuestions.clear();
-    answeredCorrectly.clear();
-
-    _chatBloc.add(ChatGenerationNewTextMessageEvent(
-        inputMessage:
-            "Give me exactly $numberOfQuestions $selectedSubject questions in the following format: [question, option1, option2, option3, option4, answerchoice]. "
-            "Provide only the questions in this exact format, with no additional text or explanations. "
-            "Ensure you provide exactly $numberOfQuestions questions."));
-
-    print('Event added to ChatBloc');
-    
-    // Add a timeout fallback in case AI doesn't respond
-    Future.delayed(Duration(seconds: 30), () {
-      if (isWaitingForQuestions && scienceQuestions.isEmpty) {
-        print('AI response timeout, using fallback questions');
-        _generateFallbackQuestions();
-      }
-    });
-  }
-
-  void _generateFallbackQuestions() {
-    print('Generating fallback questions');
-    
-    List<Map<String, dynamic>> fallbackQuestions = [];
-    
-    // Generate sample questions based on selected subject
-    for (int i = 0; i < numberOfQuestions; i++) {
-      fallbackQuestions.add({
-        "question": "Sample $selectedSubject question ${i + 1}?",
-        "options": [
-          "Option A for question ${i + 1}",
-          "Option B for question ${i + 1}",
-          "Option C for question ${i + 1}",
-          "Option D for question ${i + 1}"
-        ],
-        "correct_answer": "Option A for question ${i + 1}"
-      });
-    }
-    
-    setState(() {
-      scienceQuestions = fallbackQuestions;
-      answeredCorrectly = List.filled(fallbackQuestions.length, false);
-      currentQuestionIndex = 0;
-      showAnswer = false;
-      selectedAnswer = null;
-      isWaitingForQuestions = false;
-      showQuizArea = true;
-      showScoreSummary = false;
-    });
-    
-    print('Fallback questions generated: ${fallbackQuestions.length}');
-    
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(
-        content: Text('Using sample questions for testing. AI response may be delayed.'),
-        backgroundColor: Colors.orange,
-        duration: Duration(seconds: 3),
-      ),
-    );
-  }
-
-
-  void _restartQuiz() {
-    setState(() {
-      currentQuestionIndex = 0;
-      selectedAnswer = null;
-      showAnswer = false;
-      showScoreSummary = false;
-      showQuizArea = true;
-      answeredCorrectly = List.filled(scienceQuestions.length, false);
-    });
-  }
-
-
-  void _returnToHome() {
-    setState(() {
-      currentQuestionIndex = 0;
-      selectedAnswer = null;
-      showAnswer = false;
-      showScoreSummary = false;
-      showQuizArea = false; // Reset to show configuration screen
-      scienceQuestions.clear();
-      answeredCorrectly.clear();
-    });
-  }
-
-
-  void _submitAnswer() {
-    setState(() {
-      showAnswer = true;
-      // Record whether the answer was correct
-      answeredCorrectly[currentQuestionIndex] = selectedAnswer ==
-          scienceQuestions[currentQuestionIndex]["correct_answer"];
-    });
-  }
-
-
-  void _askForExplanation(Map<String, dynamic> question) {
-    String userAnswer = selectedAnswer ?? 'No answer selected';
-    String correctAnswer = question['correct_answer'];
-    bool isCorrect = userAnswer == correctAnswer;
-   
-    String prompt = '''
-Question: ${question['question']}
-Options: ${question['options'].join(', ')}
-Correct Answer: $correctAnswer
-My Answer: $userAnswer
-Result: ${isCorrect ? 'Correct' : 'Incorrect'}
-
-
-Please explain why the correct answer is "$correctAnswer" and provide a detailed explanation of the concept. If I got it wrong, please help me understand where I went wrong.
-''';
-
-
-    _showChatModal(initialMessage: prompt);
-  }
-
-
-  @override
-  Widget build(BuildContext context) {
-    return BlocProvider.value(
-      value: _chatBloc,
-      child: Scaffold(
-        extendBodyBehindAppBar: true,
-        backgroundColor: Colors.transparent,
-        floatingActionButton: FloatingActionButton(
-          onPressed: () => _showChatModal(),
-          backgroundColor: Colors.purple,
-          child: Icon(Icons.message, color: Colors.white),
-          heroTag: "chatFAB",
-        ),
-        appBar: AppBar(
-          title: const Text('QuestAI Quiz'),
-          backgroundColor: const Color(0xFF1D1E33),
-          foregroundColor: Colors.white,
-          leading: IconButton(
-            icon: const Icon(Icons.arrow_back),
-            onPressed: () {
-              Navigator.of(context).pop();
-            },
-          ),
-        ),
-        body: Container(
-          decoration: const BoxDecoration(
-            gradient: LinearGradient(
-              begin: Alignment.topCenter,
-              end: Alignment.bottomCenter,
-              colors: [Color(0xFF1D1E33), Color(0xFF2A2B4A)],
-            ),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(16.0),
-            child: Column(
-              children: [
-                if (!showQuizArea && !showScoreSummary) ...[
-                  SizedBox(height: 150), // Increased top padding
-                  // Subject Selection Area
-                  Text(
-                    'Select a Subject',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  SizedBox(height: 20),
-                  DropdownButton<String>(
-                    value: selectedSubject,
-                    dropdownColor: Colors.grey.shade900,
-                    style: TextStyle(color: Colors.white),
-                    underline: Container(
-                      height: 2,
-                      color: Colors.purple,
-                    ),
-                    items: subjects.map((String subject) {
-                      return DropdownMenuItem<String>(
-                        value: subject,
-                        child: Text(subject),
-                      );
-                    }).toList(),
-                    onChanged: (String? newValue) {
-                      if (newValue != null) {
-                        setState(() {
-                          selectedSubject = newValue;
-                        });
-                      }
-                    },
-                  ),
-                  SizedBox(height: 20),
-                  // Number of Questions Selection
-                  Text(
-                    'Number of Questions',
-                    style: TextStyle(
-                      fontSize: 24,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  SizedBox(height: 20),
-                  DropdownButton<int>(
-                    value: numberOfQuestions,
-                    dropdownColor: Colors.grey.shade900,
-                    style: TextStyle(color: Colors.white),
-                    underline: Container(
-                      height: 2,
-                      color: Colors.purple,
-                    ),
-                    items: [5, 10, 15, 20].map((int number) {
-                      return DropdownMenuItem<int>(
-                        value: number,
-                        child: Text('$number Questions'),
-                      );
-                    }).toList(),
-                    onChanged: (int? newValue) {
-                      if (newValue != null) {
-                        setState(() {
-                          numberOfQuestions = newValue;
-                        });
-                      }
-                    },
-                  ),
-                  SizedBox(height: 20),
-                  BlocBuilder<ChatBloc, ChatState>(
-                    bloc: _chatBloc,
-                    builder: (context, state) {
-                      if (state is ChatSuccessState &&
-                          state.messages.isNotEmpty) {
-                        // Get the last message from the AI
-                        final lastMessage = state.messages.last;
-                        if (lastMessage.role == "model") {
-                          // Use a more reliable way to trigger parsing
-                          WidgetsBinding.instance.addPostFrameCallback((_) {
-                            print('Parsing AI response: ${lastMessage.parts.first.text}');
-                            _parseAndReplaceQuestions(
-                                lastMessage.parts.first.text);
-                          });
-                        }
-                      }
-                      
-                      // Add debug information
-                      print('Current state: showQuizArea=$showQuizArea, scienceQuestions.length=${scienceQuestions.length}');
-                      
-                      return Column(
-                        children: [
-                          ElevatedButton(
-                            onPressed:
-                                isWaitingForQuestions ? null : _generateQuestions,
-                            style: ElevatedButton.styleFrom(
-                              padding: EdgeInsets.zero,
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              elevation: 6,
-                            ),
-                            child: Ink(
-                              decoration: BoxDecoration(
-                                gradient: LinearGradient(
-                                  colors: [
-                                    Color(0xFFFFD600), // Bright yellow
-                                    Color(0xFFFF9800), // Bright orange
-                                  ],
-                                  begin: Alignment.topLeft,
-                                  end: Alignment.bottomRight,
-                                ),
-                                borderRadius: BorderRadius.circular(12),
-                              ),
-                              child: Container(
-                                constraints:
-                                    BoxConstraints(minWidth: 150, minHeight: 48),
-                                alignment: Alignment.center,
-                                child: isWaitingForQuestions
-                                    ? Row(
-                                        mainAxisSize: MainAxisSize.min,
-                                        children: [
-                                          SizedBox(
-                                            width: 20,
-                                            height: 20,
-                                            child: CircularProgressIndicator(
-                                              color: Colors.white,
-                                              strokeWidth: 2,
-                                            ),
-                                          ),
-                                          SizedBox(width: 12),
-                                          Text("Generating...",
-                                              style: TextStyle(
-                                                  color: Colors.white,
-                                                  fontWeight: FontWeight.bold)),
-                                        ],
-                                      )
-                                    : Text(
-                                        "Start Quiz",
-                                        style: TextStyle(
-                                          color: Colors.white,
-                                          fontWeight: FontWeight.bold,
-                                          fontSize: 18,
-                                        ),
-                                      ),
-                              ),
-                            ),
-                          ),
-                          SizedBox(height: 12),
-                          // Debug button for testing
-                          ElevatedButton(
-                            onPressed: isWaitingForQuestions ? null : _generateFallbackQuestions,
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: Colors.grey.withOpacity(0.3),
-                              padding: EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-                              shape: RoundedRectangleBorder(
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                            ),
-                            child: Text(
-                              "Test with Sample Questions",
-                              style: TextStyle(
-                                color: Colors.white70,
-                                fontSize: 12,
-                              ),
-                            ),
-                          ),
-                        ],
-                      );
-                    },
-                  ),
-                ],
-                if (showQuizArea) _buildQuizArea(),
-                if (showScoreSummary) _buildScoreSummary(),
-              ],
-            ),
-          ),
-        ),
-      ),
-    );
-  }
-
-
-  Widget _buildQuizArea() {
-    print('_buildQuizArea called - scienceQuestions.length: ${scienceQuestions.length}');
-    print('currentQuestionIndex: $currentQuestionIndex');
-    
-    if (scienceQuestions.isEmpty) {
-      print('No questions available, showing loading indicator');
-      return Center(
-        child: Column(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            CircularProgressIndicator(),
-            SizedBox(height: 20),
-            Text(
-              'Loading questions...',
-              style: TextStyle(color: Colors.white, fontSize: 16),
-            ),
-            SizedBox(height: 10),
-            Text(
-              'If this takes too long, please try again',
-              style: TextStyle(color: Colors.white70, fontSize: 14),
-            ),
-          ],
-        ),
-      );
-    }
-
-    if (currentQuestionIndex >= scienceQuestions.length) {
-      print('currentQuestionIndex out of bounds, resetting to 0');
-      setState(() {
-        currentQuestionIndex = 0;
-      });
-    }
-
-    final q = scienceQuestions[currentQuestionIndex];
-    print('Displaying question: ${q['question']}');
-    
-    return Container(
-      padding: const EdgeInsets.all(24),
-      decoration: BoxDecoration(
-        color: Colors.white.withOpacity(0.1),
-        borderRadius: BorderRadius.circular(20),
-        border: Border.all(
-          color: Colors.white.withOpacity(0.2),
-          width: 1,
-        ),
-      ),
-      child: Column(
-        children: [
-          // Back button in top left
-          Align(
-            alignment: Alignment.topLeft,
-            child: Container(
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-              ),
-              child: IconButton(
-                icon: const Icon(Icons.arrow_back, color: Colors.white),
-                onPressed: () => Navigator.pop(context),
-              ),
-            ),
-          ),
-          const SizedBox(height: 20),
-          // Question counter with improved styling
-          Container(
-            padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-            decoration: BoxDecoration(
-              color: Colors.blue.withOpacity(0.2),
-              borderRadius: BorderRadius.circular(20),
-              border: Border.all(color: Colors.blue.withOpacity(0.3)),
-            ),
-            child: Text(
-              'Question ${currentQuestionIndex + 1} of ${scienceQuestions.length}',
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-          ),
-          const SizedBox(height: 20),
-          // Enhanced progress bar
-          Container(
-            height: 8,
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.1),
-              borderRadius: BorderRadius.circular(4),
-            ),
-            child: LinearProgressIndicator(
-              value: (currentQuestionIndex + 1) / scienceQuestions.length,
-              backgroundColor: Colors.transparent,
-              valueColor: const AlwaysStoppedAnimation<Color>(Colors.blue),
-              borderRadius: BorderRadius.circular(4),
-            ),
-          ),
-          const SizedBox(height: 30),
-          // Enhanced question display
-          Container(
-            width: double.infinity,
-            padding: const EdgeInsets.all(20),
-            decoration: BoxDecoration(
-              color: Colors.white.withOpacity(0.05),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: Colors.white.withOpacity(0.1),
-                width: 1,
-              ),
-            ),
-            child: Text(
-              q['question'] ?? 'Question not available',
-              style: const TextStyle(
-                fontSize: 20,
-                fontWeight: FontWeight.w600,
-                color: Colors.white,
-                height: 1.4,
-              ),
-              textAlign: TextAlign.center,
-            ),
-          ),
-          const SizedBox(height: 30),
-          // Enhanced options with better visual feedback
-          Expanded(
-            child: Column(
-              children: [
-                ...List.generate(
-                  (q['options'] as List<dynamic>?)?.length ?? 0,
-                  (i) => Padding(
-                    padding: const EdgeInsets.only(bottom: 16),
-                    child: Container(
-                      width: double.infinity,
-                      child: ElevatedButton(
-                        onPressed: showAnswer ? null : () {
-                          setState(() {
-                            selectedAnswer = q['options'][i];
-                          });
-                        },
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: _getOptionColor(
-                            q['options'][i],
-                            q['correct_answer'],
-                            selectedAnswer,
-                            showAnswer,
-                          ),
-                          padding: const EdgeInsets.symmetric(vertical: 20, horizontal: 16),
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                            side: BorderSide(
-                              color: _getOptionBorderColor(
-                                q['options'][i],
-                                q['correct_answer'],
-                                selectedAnswer,
-                                showAnswer,
-                              ),
-                              width: 2,
-                            ),
-                          ),
-                          elevation: showAnswer ? 4 : 2,
-                        ),
-                        child: Row(
-                          children: [
-                            // Option letter (A, B, C, D)
-                            Container(
-                              width: 32,
-                              height: 32,
-                              decoration: BoxDecoration(
-                                color: _getOptionLetterColor(
-                                  q['options'][i],
-                                  q['correct_answer'],
-                                  selectedAnswer,
-                                  showAnswer,
-                                ),
-                                shape: BoxShape.circle,
-                              ),
-                              child: Center(
-                                child: Text(
-                                  String.fromCharCode(65 + i), // A, B, C, D
-                                  style: TextStyle(
-                                    color: _getOptionLetterTextColor(
-                                      q['options'][i],
-                                      q['correct_answer'],
-                                      selectedAnswer,
-                                      showAnswer,
-                                    ),
-                                    fontWeight: FontWeight.bold,
-                                    fontSize: 14,
-                                  ),
-                                ),
-                              ),
-                            ),
-                            const SizedBox(width: 16),
-                            // Option text
-                            Expanded(
-                              child: Text(
-                                q['options'][i] ?? 'Option not available',
-                                style: TextStyle(
-                                  color: _getOptionTextColor(
-                                    q['options'][i],
-                                    q['correct_answer'],
-                                    selectedAnswer,
-                                    showAnswer,
-                                  ),
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.w500,
-                                ),
-                              ),
-                            ),
-                            // Icon for correct/incorrect feedback
-                            if (showAnswer) ...[
-                              Icon(
-                                q['options'][i] == q['correct_answer']
-                                    ? Icons.check_circle
-                                    : q['options'][i] == selectedAnswer
-                                        ? Icons.cancel
-                                        : null,
-                                color: q['options'][i] == q['correct_answer']
-                                    ? Colors.white
-                                    : q['options'][i] == selectedAnswer
-                                        ? Colors.white
-                                        : Colors.transparent,
-                                size: 24,
-                              ),
-                            ],
-                          ],
-                        ),
-                      ),
-                    ),
-                  ),
-                ),
-                const Spacer(),
-                // Enhanced Submit Answer button
-                if (selectedAnswer != null && !showAnswer) ...[
-                  Container(
-                    width: double.infinity,
-                    child: ElevatedButton(
-                      onPressed: _submitAnswer,
-                      style: ElevatedButton.styleFrom(
-                        backgroundColor: Colors.green,
-                        padding: const EdgeInsets.symmetric(vertical: 18, horizontal: 32),
-                        shape: RoundedRectangleBorder(
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        elevation: 4,
-                      ),
-                      child: const Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          Icon(Icons.check, color: Colors.white, size: 20),
-                          SizedBox(width: 8),
-                          Text(
-                            'Submit Answer',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                              fontSize: 16,
-                            ),
-                          ),
-                        ],
-                      ),
-                    ),
-                  ),
-                ],
-                // Enhanced feedback and next options
-                if (showAnswer) ...[
-                  const SizedBox(height: 20),
-                  // Enhanced feedback message
-                  Container(
-                    padding: const EdgeInsets.all(20),
-                    decoration: BoxDecoration(
-                      color: selectedAnswer == q['correct_answer']
-                          ? Colors.green.withOpacity(0.15)
-                          : Colors.red.withOpacity(0.15),
-                      borderRadius: BorderRadius.circular(16),
-                      border: Border.all(
-                        color: selectedAnswer == q['correct_answer']
-                            ? Colors.green.withOpacity(0.5)
-                            : Colors.red.withOpacity(0.5),
-                        width: 2,
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: selectedAnswer == q['correct_answer']
-                                ? Colors.green.withOpacity(0.2)
-                                : Colors.red.withOpacity(0.2),
-                            shape: BoxShape.circle,
-                          ),
-                          child: Icon(
-                            selectedAnswer == q['correct_answer']
-                                ? Icons.check_circle
-                                : Icons.cancel,
-                            color: selectedAnswer == q['correct_answer']
-                                ? Colors.green
-                                : Colors.red,
-                            size: 24,
-                          ),
-                        ),
-                        const SizedBox(width: 16),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                selectedAnswer == q['correct_answer']
-                                    ? 'Correct!'
-                                    : 'Incorrect',
-                                style: TextStyle(
-                                  color: selectedAnswer == q['correct_answer']
-                                      ? Colors.green
-                                      : Colors.red,
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                ),
-                              ),
-                              const SizedBox(height: 4),
-                              Text(
-                                selectedAnswer == q['correct_answer']
-                                    ? 'Well done! You got it right!'
-                                    : 'The correct answer is: ${q['correct_answer']}',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 14,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ),
-                      ],
-                    ),
-                  ),
-                  const SizedBox(height: 24),
-                  // Enhanced action buttons
-                  Row(
-                    children: [
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: goToNextQuestion,
-                          icon: Icon(
-                            currentQuestionIndex < scienceQuestions.length - 1
-                                ? Icons.arrow_forward
-                                : Icons.check_circle,
-                            color: Colors.white,
-                          ),
-                          label: Text(
-                            currentQuestionIndex < scienceQuestions.length - 1
-                                ? 'Next Question'
-                                : 'Finish Quiz',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.blue,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 16),
-                      Expanded(
-                        child: ElevatedButton.icon(
-                          onPressed: () => _askForExplanation(q),
-                          icon: const Icon(Icons.lightbulb, color: Colors.white),
-                          label: const Text(
-                            'Explanation',
-                            style: TextStyle(
-                              color: Colors.white,
-                              fontWeight: FontWeight.bold,
-                            ),
-                          ),
-                          style: ElevatedButton.styleFrom(
-                            backgroundColor: Colors.purple,
-                            padding: const EdgeInsets.symmetric(vertical: 16),
-                            shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12),
-                            ),
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ],
-            ),
-          ),
-        ],
-      ),
-    );
-  }
-
-  // Helper methods for option styling
-  Color _getOptionColor(String option, String correctAnswer, String? selectedAnswer, bool showAnswer) {
-    if (!showAnswer) {
-      return selectedAnswer == option
-          ? Colors.blue.withOpacity(0.3)
-          : Colors.white.withOpacity(0.1);
-    }
-    
-    if (option == correctAnswer) {
-      return Colors.green.withOpacity(0.3);
-    } else if (option == selectedAnswer) {
-      return Colors.red.withOpacity(0.3);
-    } else {
-      return Colors.white.withOpacity(0.05);
-    }
-  }
-
-  Color _getOptionBorderColor(String option, String correctAnswer, String? selectedAnswer, bool showAnswer) {
-    if (!showAnswer) {
-      return selectedAnswer == option
-          ? Colors.blue.withOpacity(0.5)
-          : Colors.white.withOpacity(0.2);
-    }
-    
-    if (option == correctAnswer) {
-      return Colors.green;
-    } else if (option == selectedAnswer) {
-      return Colors.red;
-    } else {
-      return Colors.white.withOpacity(0.1);
-    }
-  }
-
-  Color _getOptionLetterColor(String option, String correctAnswer, String? selectedAnswer, bool showAnswer) {
-    if (!showAnswer) {
-      return selectedAnswer == option
-          ? Colors.blue
-          : Colors.white.withOpacity(0.2);
-    }
-    
-    if (option == correctAnswer) {
-      return Colors.green;
-    } else if (option == selectedAnswer) {
-      return Colors.red;
-    } else {
-      return Colors.white.withOpacity(0.1);
-    }
-  }
-
-  Color _getOptionLetterTextColor(String option, String correctAnswer, String? selectedAnswer, bool showAnswer) {
-    if (!showAnswer) {
-      return selectedAnswer == option
-          ? Colors.white
-          : Colors.white.withOpacity(0.7);
-    }
-    
-    return Colors.white;
-  }
-
-  Color _getOptionTextColor(String option, String correctAnswer, String? selectedAnswer, bool showAnswer) {
-    if (!showAnswer) {
-      return selectedAnswer == option
-          ? Colors.white
-          : Colors.white.withOpacity(0.8);
-    }
-    
-    if (option == correctAnswer) {
-      return Colors.white;
-    } else if (option == selectedAnswer) {
-      return Colors.white;
-    } else {
-      return Colors.white.withOpacity(0.6);
-    }
-  }
-
-  Widget _buildScoreSummary() {
-    int correctAnswers = answeredCorrectly.where((correct) => correct).length;
-    double accuracy = (correctAnswers / scienceQuestions.length) * 100;
-
-
-    return Container(
-      padding: EdgeInsets.all(20),
-      decoration: BoxDecoration(
-        color: Colors.grey.shade800.withOpacity(0.9),
-        borderRadius: BorderRadius.circular(12),
-      ),
-      child: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          Text(
-            "Quiz Completed!",
-            style: TextStyle(
-              fontSize: 24,
-              fontWeight: FontWeight.bold,
-              color: Colors.white,
-            ),
-          ),
-          SizedBox(height: 20),
-          Text(
-            "Your Score:",
-            style: TextStyle(
-              fontSize: 20,
-              color: Colors.white,
-            ),
-          ),
-          SizedBox(height: 10),
-          Text(
-            "$correctAnswers / ${scienceQuestions.length}",
-            style: TextStyle(
-              fontSize: 36,
-              fontWeight: FontWeight.bold,
-              color: Colors.purple,
-            ),
-          ),
-          SizedBox(height: 20),
-          Text(
-            "Accuracy: ${accuracy.toStringAsFixed(1)}%",
-            style: TextStyle(
-              fontSize: 20,
-              color: accuracy > 70
-                  ? Colors.green
-                  : accuracy > 40
-                      ? Colors.orange
-                      : Colors.red,
-            ),
-          ),
-          SizedBox(height: 30),
-          Row(
-            mainAxisAlignment: MainAxisAlignment.spaceEvenly,
-            children: [
-              ElevatedButton(
-                onPressed: _restartQuiz,
-                child: Text("Retry Quiz"),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.blue,
-                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                ),
-              ),
-              ElevatedButton(
-                onPressed: _returnToHome,
-                child: Text("New Quiz"),
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.purple,
-                  padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-                ),
-              ),
-            ],
-          ),
-          SizedBox(height: 20),
-          ElevatedButton(
-            onPressed: () {
-              String prompt =
-                  "I scored $correctAnswers out of ${scienceQuestions.length} ($accuracy%) in my $selectedSubject quiz. "
-                  "Can you analyze my performance and suggest areas to improve?";
-              _showChatModal(initialMessage: prompt);
-            },
-            child: Text("Get Performance Analysis"),
-            style: ElevatedButton.styleFrom(
-              backgroundColor: Colors.green,
-              padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-            ),
-          ),
-        ],
-      ),
-    );
-  }
 }
-
-
-
-
-
-
