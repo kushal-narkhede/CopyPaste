@@ -1500,7 +1500,7 @@ class _FRQTextDisplayScreenState extends State<FRQTextDisplayScreen> {
 
   Future<void> _loadQuestions() async {
     try {
-      final String content = await rootBundle.loadString('lib/frqs/APCompSciA2024');
+      final String content = await rootBundle.loadString('assets/apfrq/APCompSciA2024.txt');
       final List<String> questionList = content.split('-----------------------------------------------------------------------------');
       
       // Filter out empty questions and trim whitespace
