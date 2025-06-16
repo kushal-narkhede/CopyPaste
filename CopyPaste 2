@@ -1472,36 +1472,6 @@ class _MCQManagerState extends State<MCQManager> {
         child: SafeArea(
           child: Column(
             children: [
-              // Header Section
-              Container(
-                padding: const EdgeInsets.all(20),
-                child: Column(
-                  children: [
-                    const Icon(
-                      Icons.quiz,
-                      size: 60,
-                      color: Colors.orange,
-                    ),
-                    const SizedBox(height: 10),
-                    const Text(
-                      'Choose Your AP Subject',
-                      style: TextStyle(
-                        fontSize: 28,
-                        fontWeight: FontWeight.bold,
-                        color: Colors.white,
-                      ),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      'Practice Multiple Choice Questions',
-                      style: TextStyle(
-                        fontSize: 16,
-                        color: Colors.white.withOpacity(0.8),
-                      ),
-                    ),
-                  ],
-                ),
-              ),
               // Search Bar
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
@@ -1514,7 +1484,7 @@ class _MCQManagerState extends State<MCQManager> {
                   },
                   style: const TextStyle(color: Colors.white),
                   decoration: InputDecoration(
-                    hintText: 'Search AP subjects...',
+                    hintText: 'Search sets...',
                     hintStyle: TextStyle(color: Colors.white.withOpacity(0.6)),
                     prefixIcon: Icon(Icons.search, color: Colors.white.withOpacity(0.6)),
                     border: OutlineInputBorder(
