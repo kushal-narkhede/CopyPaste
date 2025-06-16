@@ -409,7 +409,8 @@ class _PDFViewerScreenState extends State<PDFViewerScreen> {
 
       // Add user answers to the prompt
       promptContent.writeln('=== User Answers ===');
-      for (String question in manualQuestions.take(widget.frqCount)) {
+      final List<String> limitedQuestions = manualQuestions.take(widget.frqCount).toList();
+      for (String question in limitedQuestions) {
         promptContent.writeln('\nQuestion: $question');
         promptContent.writeln('Answer: ${answers[question] ?? "Not answered"}');
         promptContent.writeln('-------------------');
@@ -1402,7 +1403,8 @@ class _FRQTextDisplayScreenState extends State<FRQTextDisplayScreen> {
 
       // Add user answers to the prompt
       promptContent.writeln('=== User Answers ===');
-      for (String question in manualQuestions.take(widget.frqCount)) {
+      final List<String> limitedQuestions = manualQuestions.take(widget.frqCount).toList();
+      for (String question in limitedQuestions) {
         promptContent.writeln('\nQuestion: $question');
         promptContent.writeln('Answer: ${answers[question] ?? "Not answered"}');
         promptContent.writeln('-------------------');
