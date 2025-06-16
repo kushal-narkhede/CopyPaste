@@ -14,6 +14,8 @@ class _MCQManagerState extends State<MCQManager> {
   Map<int, int> userAnswers = {};
   Map<int, bool> submittedAnswers = {};
   String? selectedSubject;
+  TextEditingController _searchController = TextEditingController();
+  String _searchQuery = '';
 
   final List<Map<String, dynamic>> apClasses = [
     {
@@ -141,6 +143,60 @@ class _MCQManagerState extends State<MCQManager> {
           'options': ['32π/5', '16π/5', '8π/5', '64π/5'],
           'correct': 0,
           'explanation': 'Volume = π∫₀² (x²)² dx = π∫₀² x⁴ dx = π[x⁵/5]₀² = π(32/5 - 0) = 32π/5.',
+        },
+        {
+          'question': 'What is the derivative of f(x) = sec(x)?',
+          'options': ['sec(x)tan(x)', 'sec²(x)', 'tan(x)', 'cos(x)'],
+          'correct': 0,
+          'explanation': 'The derivative of sec(x) is sec(x)tan(x). This can be derived using the quotient rule on sec(x) = 1/cos(x).',
+        },
+        {
+          'question': 'Find the integral of ∫(sin(x)cos(x))dx',
+          'options': ['sin²(x)/2 + C', 'cos²(x)/2 + C', 'sin(x)cos(x) + C', 'sin²(x) + C'],
+          'correct': 0,
+          'explanation': 'Use the double angle identity: sin(2x) = 2sin(x)cos(x). So sin(x)cos(x) = sin(2x)/2. Therefore, ∫sin(x)cos(x)dx = ∫sin(2x)/2 dx = -cos(2x)/4 + C = sin²(x)/2 + C.',
+        },
+        {
+          'question': 'What is the limit of (e^x - 1)/x as x approaches 0?',
+          'options': ['0', '1', 'e', '∞'],
+          'correct': 1,
+          'explanation': 'This is a fundamental limit: lim(x→0) (e^x - 1)/x = 1. This limit is often used in calculus and is the basis for the derivative of e^x.',
+        },
+        {
+          'question': 'Find the derivative of f(x) = arctan(x)',
+          'options': ['1/(1 + x²)', '1/√(1 - x²)', '1/(1 - x²)', '1/√(1 + x²)'],
+          'correct': 0,
+          'explanation': 'The derivative of arctan(x) is 1/(1 + x²). This can be derived using implicit differentiation on tan(y) = x.',
+        },
+        {
+          'question': 'What is the integral of ∫(1/√(1 - x²))dx?',
+          'options': ['arcsin(x) + C', 'arccos(x) + C', 'arctan(x) + C', 'arccot(x) + C'],
+          'correct': 0,
+          'explanation': 'The integral of 1/√(1 - x²) is arcsin(x) + C. This is the antiderivative of the derivative of arcsin(x).',
+        },
+        {
+          'question': 'Find the derivative of f(x) = x^ln(x)',
+          'options': ['x^ln(x)(ln(x) + 1)', 'x^ln(x)ln(x)', 'x^ln(x)', 'ln(x)x^(ln(x)-1)'],
+          'correct': 0,
+          'explanation': 'Use logarithmic differentiation: ln(f(x)) = ln(x) * ln(x) = ln²(x). Differentiate both sides: f\'(x)/f(x) = 2ln(x)/x. Therefore, f\'(x) = x^ln(x) * 2ln(x)/x = x^ln(x)(ln(x) + 1).',
+        },
+        {
+          'question': 'What is the area between y = sin(x) and y = cos(x) from x = 0 to x = π/4?',
+          'options': ['√2 - 1', '1 - √2', '√2', '1'],
+          'correct': 0,
+          'explanation': 'Area = ∫₀^(π/4) (cos(x) - sin(x)) dx = [sin(x) + cos(x)]₀^(π/4) = (sin(π/4) + cos(π/4)) - (sin(0) + cos(0)) = (√2/2 + √2/2) - (0 + 1) = √2 - 1.',
+        },
+        {
+          'question': 'Find the derivative of f(x) = ln(√x)',
+          'options': ['1/(2x)', '1/x', '1/√x', '1/(2√x)'],
+          'correct': 0,
+          'explanation': 'Use the chain rule: d/dx[ln(√x)] = (1/√x) * d/dx[√x] = (1/√x) * (1/(2√x)) = 1/(2x).',
+        },
+        {
+          'question': 'What is the integral of ∫(x²e^x)dx?',
+          'options': ['x²e^x - 2xe^x + 2e^x + C', 'x²e^x + 2xe^x + 2e^x + C', 'x²e^x - 2xe^x + C', 'x²e^x + C'],
+          'correct': 0,
+          'explanation': 'Use integration by parts twice: ∫x²e^x dx = x²e^x - ∫2xe^x dx = x²e^x - 2(xe^x - ∫e^x dx) = x²e^x - 2xe^x + 2e^x + C.',
         },
       ],
     },
@@ -270,6 +326,60 @@ class _MCQManagerState extends State<MCQManager> {
           'correct': 0,
           'explanation': 'The Maclaurin series for cos(x) is Σ((-1)^n x^(2n)/(2n)!) from n=0 to ∞. This series has only even powers of x with alternating signs.',
         },
+        {
+          'question': 'What is the radius of convergence for Σ(x^n/n³) from n=1 to ∞?',
+          'options': ['0', '1', '∞', '2'],
+          'correct': 1,
+          'explanation': 'Using the ratio test: lim(n→∞) |a_{n+1}/a_n| = lim(n→∞) |x * n³/(n+1)³| = |x|. The series converges when |x| < 1, so radius = 1.',
+        },
+        {
+          'question': 'Find the area enclosed by the polar curve r = 3sin(2θ)',
+          'options': ['9π/2', '9π', '18π', '3π'],
+          'correct': 0,
+          'explanation': 'Area = (1/2)∫₀^(2π) (3sin(2θ))² dθ = (9/2)∫₀^(2π) sin²(2θ) dθ = (9/2)(π) = 9π/2.',
+        },
+        {
+          'question': 'What is the Taylor series for ln(1 + x) centered at x = 0?',
+          'options': ['Σ((-1)^(n+1) x^n/n)', 'Σ(x^n/n)', 'Σ((-1)^n x^n/n)', 'Σ(x^n/n!)'],
+          'correct': 0,
+          'explanation': 'The Taylor series for ln(1 + x) is Σ((-1)^(n+1) x^n/n) from n=1 to ∞. This series has alternating signs and converges for |x| < 1.',
+        },
+        {
+          'question': 'Find the length of the curve x = cos(t), y = sin(t) from t = 0 to t = π',
+          'options': ['π', '2π', 'π/2', '4π'],
+          'correct': 0,
+          'explanation': 'Length = ∫₀^π √((-sin(t))² + (cos(t))²) dt = ∫₀^π √(sin²(t) + cos²(t)) dt = ∫₀^π √1 dt = π.',
+        },
+        {
+          'question': 'What is the sum of the series Σ(1/n³) from n=1 to ∞?',
+          'options': ['ζ(3)', 'π³/6', 'π²/6', '1'],
+          'correct': 0,
+          'explanation': 'This is the Riemann zeta function ζ(3), also known as Apéry\'s constant. It is approximately 1.2020569.',
+        },
+        {
+          'question': 'Find the interval of convergence for Σ(x^n/n²) from n=1 to ∞',
+          'options': ['[-1, 1]', '(-1, 1)', '[-1, 1)', '(-∞, ∞)'],
+          'correct': 0,
+          'explanation': 'Using the ratio test, the series converges when |x| ≤ 1. At both x = -1 and x = 1, the series converges (p-series with p = 2).',
+        },
+        {
+          'question': 'What is the polar form of the complex number -1 - i?',
+          'options': ['√2 e^(5iπ/4)', '√2 e^(3iπ/4)', '√2 e^(7iπ/4)', '√2 e^(iπ)'],
+          'correct': 0,
+          'explanation': 'For -1 - i, r = √((-1)² + (-1)²) = √2 and θ = arctan((-1)/(-1)) = 5π/4. Therefore, -1 - i = √2 e^(5iπ/4) in polar form.',
+        },
+        {
+          'question': 'Find the surface area of revolution when y = x³ is rotated around the x-axis from x = 0 to x = 1',
+          'options': ['π(9√10 - 1)/27', 'π(9√10)/27', 'π(√10 - 1)/27', 'π(9√10 - 1)/9'],
+          'correct': 0,
+          'explanation': 'Surface area = 2π∫₀¹ x³√(1 + (3x²)²) dx = 2π∫₀¹ x³√(1 + 9x⁴) dx = π(9√10 - 1)/27.',
+        },
+        {
+          'question': 'What is the Maclaurin series for e^(-x)?',
+          'options': ['Σ((-1)^n x^n/n!)', 'Σ(x^n/n!)', 'Σ((-1)^n x^n)', 'Σ(x^n)'],
+          'correct': 0,
+          'explanation': 'The Maclaurin series for e^(-x) is Σ((-1)^n x^n/n!) from n=0 to ∞. This is obtained by substituting -x for x in the series for e^x.',
+        },
       ],
     },
     {
@@ -397,6 +507,60 @@ class _MCQManagerState extends State<MCQManager> {
           'options': ['ArithmeticException', 'DivideByZeroException', 'NumberFormatException', 'RuntimeException'],
           'correct': 0,
           'explanation': 'ArithmeticException is thrown when an arithmetic operation fails, such as dividing by zero. It\'s a runtime exception that extends RuntimeException.',
+        },
+        {
+          'question': 'What is the output of: System.out.println("Hello".substring(1, 4));',
+          'options': ['ell', 'Hel', 'ello', 'Error'],
+          'correct': 0,
+          'explanation': 'The substring method extracts characters from index 1 (inclusive) to index 4 (exclusive). So "Hello".substring(1, 4) returns "ell".',
+        },
+        {
+          'question': 'Which data structure is best for implementing a priority queue?',
+          'options': ['Array', 'Linked List', 'Heap', 'Stack'],
+          'correct': 2,
+          'explanation': 'A heap is the best data structure for implementing a priority queue because it provides O(log n) time complexity for both insertion and removal of the highest priority element.',
+        },
+        {
+          'question': 'What is the output of: int x = 5; System.out.println(x > 3 && x < 10);',
+          'options': ['true', 'false', 'Error', '5'],
+          'correct': 0,
+          'explanation': 'The expression x > 3 && x < 10 evaluates to true because 5 is greater than 3 AND less than 10. Both conditions are true, so the result is true.',
+        },
+        {
+          'question': 'Which method is used to convert a String to an integer?',
+          'options': ['parseInt()', 'toString()', 'valueOf()', 'convert()'],
+          'correct': 0,
+          'explanation': 'Integer.parseInt() is used to convert a String to an integer. It throws NumberFormatException if the string cannot be converted to a valid integer.',
+        },
+        {
+          'question': 'What is the time complexity of binary search tree insertion?',
+          'options': ['O(1)', 'O(log n)', 'O(n)', 'O(n²)'],
+          'correct': 1,
+          'explanation': 'Binary search tree insertion has O(log n) time complexity in the average case. However, in the worst case (when the tree becomes linear), it can be O(n).',
+        },
+        {
+          'question': 'What is the output of: String s = "Java"; System.out.println(s.charAt(2));',
+          'options': ['J', 'a', 'v', 'Error'],
+          'correct': 2,
+          'explanation': 'The charAt(2) method returns the character at index 2. In "Java", the character at index 2 is "v" (indices are 0-based).',
+        },
+        {
+          'question': 'Which keyword is used to prevent method overriding?',
+          'options': ['final', 'static', 'private', 'protected'],
+          'correct': 0,
+          'explanation': 'The "final" keyword can be used to prevent method overriding. A final method cannot be overridden by subclasses.',
+        },
+        {
+          'question': 'What is the output of: int[] arr = {1, 2, 3, 4, 5}; System.out.println(arr.length);',
+          'options': ['4', '5', '6', 'Error'],
+          'correct': 1,
+          'explanation': 'The length property returns the number of elements in the array. The array has 5 elements, so arr.length returns 5.',
+        },
+        {
+          'question': 'Which sorting algorithm has the worst time complexity?',
+          'options': ['Bubble Sort', 'Quick Sort', 'Merge Sort', 'Heap Sort'],
+          'correct': 0,
+          'explanation': 'Bubble Sort has the worst time complexity of O(n²) among the given options. Quick Sort, Merge Sort, and Heap Sort all have O(n log n) average time complexity.',
         },
       ],
     },
@@ -526,6 +690,54 @@ class _MCQManagerState extends State<MCQManager> {
           'correct': 0,
           'explanation': 'A loop is a programming construct that repeats a block of code multiple times until a specified condition is met. It helps avoid code repetition and makes programs more efficient.',
         },
+        {
+          'question': 'What is the purpose of a cache in computing?',
+          'options': ['To store frequently accessed data', 'To increase storage capacity', 'To connect to the internet', 'To display graphics'],
+          'correct': 0,
+          'explanation': 'A cache stores frequently accessed data to improve performance by reducing the time needed to access that data. It acts as a temporary storage area between the CPU and main memory.',
+        },
+        {
+          'question': 'What is the binary representation of the decimal number 25?',
+          'options': ['11001', '10101', '11100', '10011'],
+          'correct': 0,
+          'explanation': 'To convert 25 to binary: 25 ÷ 2 = 12 remainder 1, 12 ÷ 2 = 6 remainder 0, 6 ÷ 2 = 3 remainder 0, 3 ÷ 2 = 1 remainder 1, 1 ÷ 2 = 0 remainder 1. Reading backwards: 11001.',
+        },
+        {
+          'question': 'What is the purpose of an algorithm?',
+          'options': ['To solve problems step by step', 'To create hardware', 'To connect networks', 'To display images'],
+          'correct': 0,
+          'explanation': 'An algorithm is a step-by-step procedure designed to solve a specific problem. It provides a clear, unambiguous sequence of instructions to accomplish a task.',
+        },
+        {
+          'question': 'What is the difference between hardware and software?',
+          'options': ['Hardware is physical, software is programs', 'Hardware is programs, software is physical', 'Both are physical', 'Both are programs'],
+          'correct': 0,
+          'explanation': 'Hardware refers to the physical components of a computer system (CPU, memory, etc.), while software refers to the programs and instructions that tell the hardware what to do.',
+        },
+        {
+          'question': 'What is the purpose of a router in a network?',
+          'options': ['To direct data packets', 'To store files', 'To process data', 'To display web pages'],
+          'correct': 0,
+          'explanation': 'A router directs data packets between different networks. It determines the best path for data to travel from source to destination across the internet.',
+        },
+        {
+          'question': 'What is the hexadecimal representation of the decimal number 255?',
+          'options': ['FF', 'FE', 'F0', '100'],
+          'correct': 0,
+          'explanation': 'To convert 255 to hexadecimal: 255 ÷ 16 = 15 remainder 15. In hexadecimal, 15 is represented as F. So 255 in decimal is FF in hexadecimal.',
+        },
+        {
+          'question': 'What is the purpose of a firewall?',
+          'options': ['To protect against unauthorized access', 'To speed up internet', 'To store data', 'To create backups'],
+          'correct': 0,
+          'explanation': 'A firewall is a network security device that monitors and controls incoming and outgoing network traffic based on predetermined security rules, protecting against unauthorized access.',
+        },
+        {
+          'question': 'What is the difference between analog and digital signals?',
+          'options': ['Analog is continuous, digital is discrete', 'Analog is discrete, digital is continuous', 'Both are continuous', 'Both are discrete'],
+          'correct': 0,
+          'explanation': 'Analog signals are continuous and can take any value within a range, while digital signals are discrete and can only take specific values (typically 0 and 1).',
+        },
       ],
     },
     {
@@ -653,6 +865,60 @@ class _MCQManagerState extends State<MCQManager> {
           'options': ['η = (W_out/W_in) × 100%', 'η = (W_in/W_out) × 100%', 'η = W_out + W_in', 'η = W_out - W_in'],
           'correct': 0,
           'explanation': 'Efficiency is the ratio of useful work output to total work input, expressed as a percentage: η = (W_out/W_in) × 100%.',
+        },
+        {
+          'question': 'What is the formula for centripetal force?',
+          'options': ['F = mv²/r', 'F = ma', 'F = mg', 'F = kx'],
+          'correct': 0,
+          'explanation': 'Centripetal force is F = mv²/r, where m is mass, v is velocity, and r is the radius of the circular path. This force is always directed toward the center of the circle.',
+        },
+        {
+          'question': 'What is the SI unit for frequency?',
+          'options': ['Meter', 'Second', 'Hertz', 'Watt'],
+          'correct': 2,
+          'explanation': 'The Hertz (Hz) is the SI unit for frequency. One Hertz equals one cycle per second. Frequency measures how often something happens in a given time period.',
+        },
+        {
+          'question': 'What is the formula for density?',
+          'options': ['ρ = m/v', 'ρ = v/m', 'ρ = m×v', 'ρ = m+v'],
+          'correct': 0,
+          'explanation': 'Density is mass per unit volume: ρ = m/v. It is a measure of how much mass is contained in a given volume of a substance.',
+        },
+        {
+          'question': 'What is the principle of conservation of energy?',
+          'options': ['Energy cannot be created or destroyed', 'Energy can be created', 'Energy can be destroyed', 'Energy always increases'],
+          'correct': 0,
+          'explanation': 'The principle of conservation of energy states that energy cannot be created or destroyed, only transformed from one form to another. The total energy in a closed system remains constant.',
+        },
+        {
+          'question': 'What is the formula for average velocity?',
+          'options': ['v = d/t', 'v = a×t', 'v = ½at²', 'v = at'],
+          'correct': 0,
+          'explanation': 'Average velocity is displacement divided by time: v = d/t. It is a vector quantity that describes both the speed and direction of motion.',
+        },
+        {
+          'question': 'What is the SI unit for pressure?',
+          'options': ['Newton', 'Pascal', 'Joule', 'Watt'],
+          'correct': 1,
+          'explanation': 'The Pascal (Pa) is the SI unit for pressure. One Pascal equals one Newton per square meter. Pressure is force per unit area.',
+        },
+        {
+          'question': 'What is the formula for mechanical advantage?',
+          'options': ['MA = F_out/F_in', 'MA = F_in/F_out', 'MA = d_in/d_out', 'MA = d_out/d_in'],
+          'correct': 0,
+          'explanation': 'Mechanical advantage is the ratio of output force to input force: MA = F_out/F_in. It measures how much a machine multiplies the input force.',
+        },
+        {
+          'question': 'What is the law of inertia?',
+          'options': ['Newton\'s First Law', 'Newton\'s Second Law', 'Newton\'s Third Law', 'Law of Gravity'],
+          'correct': 0,
+          'explanation': 'Newton\'s First Law (Law of Inertia) states that an object at rest stays at rest and an object in motion stays in motion unless acted upon by an external force.',
+        },
+        {
+          'question': 'What is the formula for weight?',
+          'options': ['W = mg', 'W = ma', 'W = mv', 'W = Fd'],
+          'correct': 0,
+          'explanation': 'Weight is the force of gravity on an object: W = mg, where m is mass and g is gravitational acceleration (9.8 m/s² on Earth).',
         },
       ],
     },
@@ -910,6 +1176,66 @@ class _MCQManagerState extends State<MCQManager> {
           'correct': 0,
           'explanation': 'Ethanol has the molecular formula C₂H₅OH. It consists of two carbon atoms, six hydrogen atoms, and one oxygen atom, with the OH group attached to one carbon.',
         },
+        {
+          'question': 'What is the molecular formula for ethanol?',
+          'options': ['C₂H₅OH', 'CH₃OH', 'C₃H₇OH', 'C₄H₉OH'],
+          'correct': 0,
+          'explanation': 'Ethanol has the molecular formula C₂H₅OH. It consists of two carbon atoms, six hydrogen atoms, and one oxygen atom, with the OH group attached to one carbon.',
+        },
+        {
+          'question': 'What is the atomic number of helium?',
+          'options': ['1', '2', '3', '4'],
+          'correct': 1,
+          'explanation': 'The atomic number of helium is 2. This means helium has 2 protons in its nucleus and 2 electrons in a neutral atom.',
+        },
+        {
+          'question': 'What type of bond is formed between carbon and oxygen in CO₂?',
+          'options': ['Ionic', 'Covalent', 'Metallic', 'Hydrogen'],
+          'correct': 1,
+          'explanation': 'CO₂ forms covalent bonds. Carbon shares its four valence electrons with two oxygen atoms, creating double covalent bonds.',
+        },
+        {
+          'question': 'What is the molecular formula for glucose?',
+          'options': ['C₆H₁₂O₆', 'C₆H₁₀O₅', 'C₅H₁₂O₆', 'C₆H₁₂O₅'],
+          'correct': 0,
+          'explanation': 'The molecular formula for glucose is C₆H₁₂O₆. This means glucose contains 6 carbon atoms, 12 hydrogen atoms, and 6 oxygen atoms.',
+        },
+        {
+          'question': 'What is the atomic number of neon?',
+          'options': ['8', '9', '10', '11'],
+          'correct': 2,
+          'explanation': 'The atomic number of neon is 10. This means neon has 10 protons in its nucleus and 10 electrons in a neutral atom.',
+        },
+        {
+          'question': 'What type of reaction is: CaCO₃ → CaO + CO₂?',
+          'options': ['Synthesis', 'Decomposition', 'Single replacement', 'Double replacement'],
+          'correct': 1,
+          'explanation': 'This is a decomposition reaction. A single compound breaks down into two or more simpler substances. Calcium carbonate decomposes into calcium oxide and carbon dioxide.',
+        },
+        {
+          'question': 'What is the molecular formula for propane?',
+          'options': ['CH₄', 'C₂H₆', 'C₃H₈', 'C₄H₁₀'],
+          'correct': 2,
+          'explanation': 'Propane has the molecular formula C₃H₈. It is an alkane with three carbon atoms and eight hydrogen atoms.',
+        },
+        {
+          'question': 'What is the atomic number of sodium?',
+          'options': ['9', '10', '11', '12'],
+          'correct': 2,
+          'explanation': 'The atomic number of sodium is 11. This means sodium has 11 protons in its nucleus and 11 electrons in a neutral atom.',
+        },
+        {
+          'question': 'What type of bond is formed between hydrogen and fluorine in HF?',
+          'options': ['Ionic', 'Covalent', 'Metallic', 'Hydrogen'],
+          'correct': 1,
+          'explanation': 'HF forms a covalent bond. Hydrogen and fluorine share electrons to achieve stable electron configurations.',
+        },
+        {
+          'question': 'What is the molecular formula for benzene?',
+          'options': ['C₆H₆', 'C₆H₁₂', 'C₆H₁₀', 'C₆H₈'],
+          'correct': 0,
+          'explanation': 'Benzene has the molecular formula C₆H₆. It is an aromatic hydrocarbon with six carbon atoms arranged in a ring and six hydrogen atoms.',
+        },
       ],
     },
     {
@@ -1038,9 +1364,80 @@ class _MCQManagerState extends State<MCQManager> {
           'correct': 0,
           'explanation': 'Homeostasis is the process of maintaining internal balance and stability in an organism. It involves regulating various physiological processes to keep conditions within a narrow range.',
         },
+        {
+          'question': 'What is the process of cell division for growth and repair called?',
+          'options': ['Mitosis', 'Meiosis', 'Binary fission', 'Budding'],
+          'correct': 0,
+          'explanation': 'Mitosis is the process of cell division used for growth and repair. It produces two identical daughter cells with the same number of chromosomes as the parent cell.',
+        },
+        {
+          'question': 'What is the process of cell division for sexual reproduction called?',
+          'options': ['Mitosis', 'Meiosis', 'Binary fission', 'Budding'],
+          'correct': 1,
+          'explanation': 'Meiosis is the process of cell division used for sexual reproduction. It produces four genetically different cells with half the number of chromosomes as the parent cell.',
+        },
+        {
+          'question': 'What is the study of how organisms interact with their environment called?',
+          'options': ['Genetics', 'Ecology', 'Anatomy', 'Physiology'],
+          'correct': 1,
+          'explanation': 'Ecology is the study of how organisms interact with each other and their environment. It includes the study of populations, communities, ecosystems, and the biosphere.',
+        },
+        {
+          'question': 'What is the process of breaking down food to release energy called?',
+          'options': ['Photosynthesis', 'Cellular respiration', 'Digestion', 'Fermentation'],
+          'correct': 1,
+          'explanation': 'Cellular respiration is the process of breaking down food molecules to release energy in the form of ATP. It occurs in the mitochondria of cells.',
+        },
+        {
+          'question': 'What is the process of making RNA from DNA called?',
+          'options': ['Transcription', 'Translation', 'Replication', 'Mutation'],
+          'correct': 0,
+          'explanation': 'Transcription is the process of making RNA from DNA. It occurs in the nucleus and involves copying the genetic information from DNA into messenger RNA (mRNA).',
+        },
+        {
+          'question': 'What is the process of making proteins from RNA called?',
+          'options': ['Transcription', 'Translation', 'Replication', 'Mutation'],
+          'correct': 1,
+          'explanation': 'Translation is the process of making proteins from RNA. It occurs in the ribosomes and involves reading the genetic code in mRNA to assemble amino acids into proteins.',
+        },
+        {
+          'question': 'What is the process of copying DNA called?',
+          'options': ['Transcription', 'Translation', 'Replication', 'Mutation'],
+          'correct': 2,
+          'explanation': 'DNA replication is the process of copying DNA. It occurs before cell division and ensures that each daughter cell receives an identical copy of the genetic material.',
+        },
+        {
+          'question': 'What is the process of change in species over time called?',
+          'options': ['Evolution', 'Adaptation', 'Mutation', 'Selection'],
+          'correct': 0,
+          'explanation': 'Evolution is the process of change in species over time. It involves changes in the genetic makeup of populations over generations, leading to the diversity of life on Earth.',
+        },
+        {
+          'question': 'What is the process of organisms adapting to their environment called?',
+          'options': ['Evolution', 'Adaptation', 'Mutation', 'Selection'],
+          'correct': 1,
+          'explanation': 'Adaptation is the process by which organisms become better suited to their environment. It can occur through natural selection, where favorable traits become more common in a population.',
+        },
       ],
     },
   ];
+
+  @override
+  void dispose() {
+    _searchController.dispose();
+    super.dispose();
+  }
+
+  List<Map<String, dynamic>> get filteredAPClasses {
+    if (_searchQuery.isEmpty) {
+      return apClasses;
+    }
+    return apClasses.where((apClass) {
+      String className = apClass['name'].toString().toLowerCase();
+      String searchLower = _searchQuery.toLowerCase();
+      return className.contains(searchLower);
+    }).toList();
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -1105,6 +1502,38 @@ class _MCQManagerState extends State<MCQManager> {
                   ],
                 ),
               ),
+              // Search Bar
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
+                child: TextField(
+                  controller: _searchController,
+                  onChanged: (value) {
+                    setState(() {
+                      _searchQuery = value;
+                    });
+                  },
+                  style: const TextStyle(color: Colors.white),
+                  decoration: InputDecoration(
+                    hintText: 'Search AP subjects...',
+                    hintStyle: TextStyle(color: Colors.white.withOpacity(0.6)),
+                    prefixIcon: Icon(Icons.search, color: Colors.white.withOpacity(0.6)),
+                    border: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(25),
+                      borderSide: BorderSide(color: Colors.white.withOpacity(0.3)),
+                    ),
+                    enabledBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(25),
+                      borderSide: BorderSide(color: Colors.white.withOpacity(0.3)),
+                    ),
+                    focusedBorder: OutlineInputBorder(
+                      borderRadius: BorderRadius.circular(25),
+                      borderSide: const BorderSide(color: Colors.orange),
+                    ),
+                    filled: true,
+                    fillColor: Colors.white.withOpacity(0.1),
+                  ),
+                ),
+              ),
               // AP Classes Grid
               Expanded(
                 child: Padding(
@@ -1116,9 +1545,9 @@ class _MCQManagerState extends State<MCQManager> {
                       mainAxisSpacing: 16,
                       childAspectRatio: 0.85,
                     ),
-                    itemCount: apClasses.length,
+                    itemCount: filteredAPClasses.length,
                     itemBuilder: (context, index) {
-                      final apClass = apClasses[index];
+                      final apClass = filteredAPClasses[index];
                       return _buildAPClassCard(apClass);
                     },
                   ),
@@ -1215,7 +1644,7 @@ class _MCQManagerState extends State<MCQManager> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Text(
-                      '20 Questions',
+                      '30 Questions',
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
