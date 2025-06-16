@@ -1864,7 +1864,7 @@ class _LearnTabState extends State<LearnTab>
                                 Icon(Icons.download, color: Colors.white, size: 32),
                                 SizedBox(width: 12),
                                 Text(
-                                  'Browse Sets',
+                                  'Browse',
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontSize: 22,
@@ -1910,7 +1910,7 @@ class _LearnTabState extends State<LearnTab>
                                 Icon(Icons.auto_awesome, color: Colors.white, size: 32),
                                 SizedBox(width: 12),
                                 Text(
-                                  'Generate Questions',
+                                  'Quick Play',
                                   style: TextStyle(
                                     color: Colors.white,
                                     fontSize: 22,
