@@ -1800,16 +1800,19 @@ class _LearnTabState extends State<LearnTab>
                       ? const Center(child: CircularProgressIndicator())
                       : Column(
                           children: [
-                            TabBar(
-                              controller: _tabController,
-                              labelColor: Colors.white,
-                              unselectedLabelColor: Colors.white70,
-                              indicatorColor: Colors.blueAccent,
-                              tabs: const [
-                                Tab(text: 'My Sets'),
-                                Tab(text: 'Browse'),
-                                Tab(text: 'Quick Play'),
-                              ],
+                            Container(
+                              margin: EdgeInsets.only(top: -15),
+                              child: TabBar(
+                                controller: _tabController,
+                                labelColor: Colors.white,
+                                unselectedLabelColor: Colors.white70,
+                                indicatorColor: Colors.blueAccent,
+                                tabs: const [
+                                  Tab(text: 'My Sets'),
+                                  Tab(text: 'Browse'),
+                                  Tab(text: 'Quick Play'),
+                                ],
+                              ),
                             ),
                             Expanded(
                               child: TabBarView(
