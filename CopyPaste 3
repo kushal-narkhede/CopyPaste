@@ -476,7 +476,6 @@ Generate exactly $numberOfQuestions questions for $selectedSubject:
     return BlocProvider.value(
       value: _chatBloc,
       child: Scaffold(
-        key: ValueKey('home_page_${showQuizArea}_${scienceQuestions.length}'),
         extendBodyBehindAppBar: true,
         backgroundColor: Colors.transparent,
         floatingActionButton: FloatingActionButton(
@@ -484,10 +483,6 @@ Generate exactly $numberOfQuestions questions for $selectedSubject:
           backgroundColor: Colors.purple,
           child: Icon(Icons.message, color: Colors.white),
           heroTag: "chatFAB",
-        ),
-        appBar: AppBar(
-          title: Text("QuestAI Chat"),
-          backgroundColor: Colors.purple,
         ),
         body: Stack(
           children: [
@@ -549,20 +544,17 @@ Generate exactly $numberOfQuestions questions for $selectedSubject:
               width: MediaQuery.of(context).size.width * 0.9,
               padding: EdgeInsets.all(24),
               decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                  colors: [
-                    Colors.purple.withOpacity(0.8),
-                    Colors.blue.withOpacity(0.8),
-                  ],
-                ),
+                color: Colors.transparent,
                 borderRadius: BorderRadius.circular(20),
+                border: Border.all(
+                  color: Colors.white.withOpacity(0.3),
+                  width: 2,
+                ),
                 boxShadow: [
                   BoxShadow(
-                    color: Colors.purple.withOpacity(0.3),
-                    blurRadius: 20,
-                    offset: Offset(0, 10),
+                    color: Colors.white.withOpacity(0.1),
+                    blurRadius: 10,
+                    offset: Offset(0, 5),
                   ),
                 ],
               ),
@@ -597,7 +589,7 @@ Generate exactly $numberOfQuestions questions for $selectedSubject:
                       color: Colors.white.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: Colors.white.withOpacity(0.2),
+                        color: Colors.white.withOpacity(0.3),
                         width: 1,
                       ),
                     ),
@@ -650,7 +642,7 @@ Generate exactly $numberOfQuestions questions for $selectedSubject:
                       color: Colors.white.withOpacity(0.1),
                       borderRadius: BorderRadius.circular(12),
                       border: Border.all(
-                        color: Colors.white.withOpacity(0.2),
+                        color: Colors.white.withOpacity(0.3),
                         width: 1,
                       ),
                     ),
