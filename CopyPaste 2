@@ -298,6 +298,7 @@ class _HomePageState extends State<HomePage> {
         }
 
         print('Setting state with ${newQuestions.length} questions');
+        print('Before setState - showQuizArea: $showQuizArea, scienceQuestions.length: ${scienceQuestions.length}');
         setState(() {
           scienceQuestions = newQuestions;
           answeredCorrectly = List.filled(newQuestions.length, false);
@@ -309,7 +310,8 @@ class _HomePageState extends State<HomePage> {
           showScoreSummary = false;
         });
 
-        print('State updated. showQuizArea: $showQuizArea, scienceQuestions.length: ${scienceQuestions.length}');
+        print('After setState - showQuizArea: $showQuizArea, scienceQuestions.length: ${scienceQuestions.length}');
+        print('First question: ${scienceQuestions.isNotEmpty ? scienceQuestions[0]['question'] : 'No questions'}');
 
         // Clear chat history after successful question generation
         _clearChatHistory();
@@ -422,11 +424,18 @@ class _HomePageState extends State<HomePage> {
     scienceQuestions.clear();
     answeredCorrectly.clear();
 
-    _chatBloc.add(ChatGenerationNewTextMessageEvent(
-        inputMessage:
-            "Give me exactly $numberOfQuestions $selectedSubject questions in the following format: [question, option1, option2, option3, option4, answerchoice]. "
-            "Provide only the questions in this exact format, with no additional text or explanations. "
-            "Ensure you provide exactly $numberOfQuestions questions."));
+    String prompt = """
+Generate exactly $numberOfQuestions multiple choice questions for $selectedSubject.
+Format each question exactly like this: [question text, option A, option B, option C, option D, correct answer]
+Do not include any explanations or additional text, just the questions in this exact format.
+Example format:
+[What is the chemical symbol for water?, H2O, CO2, NaCl, O2, H2O]
+[What is the capital of France?, London, Berlin, Paris, Madrid, Paris]
+
+Generate exactly $numberOfQuestions questions for $selectedSubject:
+""";
+
+    _chatBloc.add(ChatGenerationNewTextMessageEvent(inputMessage: prompt));
 
     print('Event added to ChatBloc');
   }
@@ -463,9 +472,11 @@ class _HomePageState extends State<HomePage> {
 
   @override
   Widget build(BuildContext context) {
+    print('HomePage build method called - showQuizArea: $showQuizArea, scienceQuestions.length: ${scienceQuestions.length}');
     return BlocProvider.value(
       value: _chatBloc,
       child: Scaffold(
+        key: ValueKey('home_page_${showQuizArea}_${scienceQuestions.length}'),
         extendBodyBehindAppBar: true,
         backgroundColor: Colors.transparent,
         floatingActionButton: FloatingActionButton(
@@ -502,15 +513,6 @@ class _HomePageState extends State<HomePage> {
                   builder: (context, state) {
                     print('BlocBuilder rebuilding. showQuizArea: $showQuizArea, scienceQuestions.length: ${scienceQuestions.length}, showScoreSummary: $showScoreSummary');
                     
-                    Widget currentWidget;
-                    if (showScoreSummary) {
-                      currentWidget = _buildScoreSummary();
-                    } else if (showQuizArea && scienceQuestions.isNotEmpty) {
-                      currentWidget = _buildQuizArea();
-                    } else {
-                      currentWidget = _buildHomeScreen();
-                    }
-                    
                     return Padding(
                       padding: const EdgeInsets.symmetric(horizontal: 16.0),
                       child: Column(
@@ -525,7 +527,27 @@ class _HomePageState extends State<HomePage> {
                             ),
                           ),
                           SizedBox(height: 20),
-                          currentWidget,
+                          Expanded(
+                            child: showScoreSummary
+                                ? _buildScoreSummary()
+                                : showQuizArea && scienceQuestions.isNotEmpty
+                                    ? _buildQuizArea()
+                                    : _buildHomeScreen(),
+                          ),
+                          // Debug info
+                          if (showQuizArea && scienceQuestions.isNotEmpty)
+                            Container(
+                              padding: EdgeInsets.all(8),
+                              margin: EdgeInsets.only(bottom: 8),
+                              decoration: BoxDecoration(
+                                color: Colors.red.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Text(
+                                'DEBUG: Quiz Area Active - ${scienceQuestions.length} questions, Index: $currentQuestionIndex',
+                                style: TextStyle(color: Colors.white, fontSize: 12),
+                              ),
+                            ),
                         ],
                       ),
                     );
@@ -672,11 +694,111 @@ class _HomePageState extends State<HomePage> {
           ),
         ),
         SizedBox(height: 20),
+        
+        // Loading indicator when generating questions
+        if (isWaitingForQuestions)
+          Container(
+            padding: EdgeInsets.all(20),
+            decoration: BoxDecoration(
+              color: Colors.blue.withOpacity(0.1),
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.blue.withOpacity(0.3)),
+            ),
+            child: Column(
+              children: [
+                CircularProgressIndicator(
+                  valueColor: AlwaysStoppedAnimation<Color>(Colors.blue),
+                ),
+                SizedBox(height: 16),
+                Text(
+                  "Generating $numberOfQuestions $selectedSubject questions...",
+                  style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 16,
+                    fontWeight: FontWeight.bold,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                SizedBox(height: 8),
+                Text(
+                  "This may take a few moments",
+                  style: TextStyle(
+                    color: Colors.white70,
+                    fontSize: 14,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+              ],
+            ),
+          ),
+          
+        // Debug button to test quiz area
+        if (!isWaitingForQuestions && !showQuizArea)
+          Container(
+            margin: EdgeInsets.only(top: 16),
+            child: ElevatedButton(
+              onPressed: () {
+                print('Manual test button pressed');
+                setState(() {
+                  // Create test questions
+                  scienceQuestions = [
+                    {
+                      "question": "What is the chemical symbol for water?",
+                      "options": ["H2O", "CO2", "NaCl", "O2"],
+                      "answer": "H2O"
+                    },
+                    {
+                      "question": "What is the capital of France?",
+                      "options": ["London", "Berlin", "Paris", "Madrid"],
+                      "answer": "Paris"
+                    }
+                  ];
+                  answeredCorrectly = List.filled(scienceQuestions.length, false);
+                  currentQuestionIndex = 0;
+                  showAnswer = false;
+                  selectedAnswer = null;
+                  showQuizArea = true;
+                  showScoreSummary = false;
+                });
+                print('Test questions set - showQuizArea: $showQuizArea, scienceQuestions.length: ${scienceQuestions.length}');
+              },
+              child: Text("Test Quiz Area (Debug)"),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.orange,
+                padding: EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+              ),
+            ),
+          ),
       ],
     );
   }
 
   Widget _buildQuizArea() {
+    print('_buildQuizArea called with ${scienceQuestions.length} questions, current index: $currentQuestionIndex');
+    if (scienceQuestions.isEmpty) {
+      print('No questions available!');
+      return Center(
+        child: Text(
+          'No questions available',
+          style: TextStyle(color: Colors.white, fontSize: 18),
+        ),
+      );
+    }
+    
+    if (currentQuestionIndex >= scienceQuestions.length) {
+      print('Current index out of bounds!');
+      return Center(
+        child: Text(
+          'Question index out of bounds',
+          style: TextStyle(color: Colors.white, fontSize: 18),
+        ),
+      );
+    }
+    
+    final currentQuestion = scienceQuestions[currentQuestionIndex];
+    print('Current question: ${currentQuestion['question']}');
+    print('Current options: ${currentQuestion['options']}');
+    
     return Column(
       crossAxisAlignment: CrossAxisAlignment.start,
       children: [
@@ -753,7 +875,7 @@ class _HomePageState extends State<HomePage> {
           child: Column(
             children: [
               Text(
-                scienceQuestions[currentQuestionIndex]["question"]!,
+                currentQuestion["question"]!,
                 style: const TextStyle(
                   fontSize: 24,
                   fontWeight: FontWeight.bold,
@@ -765,8 +887,7 @@ class _HomePageState extends State<HomePage> {
               const SizedBox(height: 16),
               ElevatedButton.icon(
                 onPressed: () {
-                  String question =
-                      scienceQuestions[currentQuestionIndex]["question"]!;
+                  String question = currentQuestion["question"]!;
                   String prompt =
                       "Please explain how to solve this question: '$question'. Provide a detailed step-by-step explanation with the fundamental concepts involved.";
                   _showChatModal(initialMessage: prompt);
@@ -788,15 +909,13 @@ class _HomePageState extends State<HomePage> {
         const SizedBox(height: 32),
 
         // Answer options
-        Expanded(
+        Flexible(
           child: ListView.builder(
-            itemCount: scienceQuestions[currentQuestionIndex]["options"].length,
+            itemCount: currentQuestion["options"].length,
             itemBuilder: (context, index) {
-              final option =
-                  scienceQuestions[currentQuestionIndex]["options"][index];
+              final option = currentQuestion["options"][index];
               final isSelected = selectedAnswer == option;
-              final isCorrect = showAnswer &&
-                  option == scienceQuestions[currentQuestionIndex]["answer"];
+              final isCorrect = showAnswer && option == currentQuestion["answer"];
               final isWrong = showAnswer && isSelected && !isCorrect;
 
               return Padding(
