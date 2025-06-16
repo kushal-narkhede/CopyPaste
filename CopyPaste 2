@@ -8,13 +8,71 @@ class MCQManager extends StatefulWidget {
 }
 
 class _MCQManagerState extends State<MCQManager> {
+  final List<Map<String, dynamic>> apClasses = [
+    {
+      'name': 'AP Calculus AB',
+      'color': [Color(0xFF667eea), Color(0xFF764ba2)],
+      'icon': Icons.functions,
+      'description': 'Differential & Integral Calculus',
+    },
+    {
+      'name': 'AP Calculus BC',
+      'color': [Color(0xFFf093fb), Color(0xFFf5576c)],
+      'icon': Icons.trending_up,
+      'description': 'Advanced Calculus & Series',
+    },
+    {
+      'name': 'AP Computer Science A',
+      'color': [Color(0xFF4facfe), Color(0xFF00f2fe)],
+      'icon': Icons.code,
+      'description': 'Java Programming',
+    },
+    {
+      'name': 'AP Computer Science Principles',
+      'color': [Color(0xFF43e97b), Color(0xFF38f9d7)],
+      'icon': Icons.computer,
+      'description': 'Computational Thinking',
+    },
+    {
+      'name': 'AP Physics 1',
+      'color': [Color(0xFFfa709a), Color(0xFFfee140)],
+      'icon': Icons.science,
+      'description': 'Algebra-Based Physics',
+    },
+    {
+      'name': 'AP Physics 2',
+      'color': [Color(0xFFa8edea), Color(0xFFfed6e3)],
+      'icon': Icons.waves,
+      'description': 'Advanced Physics Concepts',
+    },
+    {
+      'name': 'AP Chemistry',
+      'color': [Color(0xFFffecd2), Color(0xFFfcb69f)],
+      'icon': Icons.science_outlined,
+      'description': 'Chemical Principles',
+    },
+    {
+      'name': 'AP Biology',
+      'color': [Color(0xFF84fab0), Color(0xFF8fd3f4)],
+      'icon': Icons.biotech,
+      'description': 'Biological Systems',
+    },
+  ];
+
   @override
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        title: const Text('MCQ Manager'),
+        title: const Text(
+          'AP MCQ Practice',
+          style: TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 24,
+          ),
+        ),
         backgroundColor: Colors.orange,
         foregroundColor: Colors.white,
+        elevation: 0,
       ),
       body: Container(
         decoration: const BoxDecoration(
@@ -24,42 +82,160 @@ class _MCQManagerState extends State<MCQManager> {
             colors: [Color(0xFF1D1E33), Color(0xFF2A2B4A)],
           ),
         ),
-        child: const Center(
+        child: SafeArea(
           child: Column(
-            mainAxisAlignment: MainAxisAlignment.center,
             children: [
-              Icon(
-                Icons.quiz,
-                size: 100,
-                color: Colors.orange,
-              ),
-              SizedBox(height: 20),
-              Text(
-                'MCQ Manager',
-                style: TextStyle(
-                  fontSize: 32,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+              // Header Section
+              Container(
+                padding: const EdgeInsets.all(20),
+                child: Column(
+                  children: [
+                    const Icon(
+                      Icons.quiz,
+                      size: 60,
+                      color: Colors.orange,
+                    ),
+                    const SizedBox(height: 10),
+                    const Text(
+                      'Choose Your AP Subject',
+                      style: TextStyle(
+                        fontSize: 28,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    const SizedBox(height: 8),
+                    Text(
+                      'Practice Multiple Choice Questions',
+                      style: TextStyle(
+                        fontSize: 16,
+                        color: Colors.white.withOpacity(0.8),
+                      ),
+                    ),
+                  ],
                 ),
               ),
-              SizedBox(height: 10),
-              Text(
-                'Multiple Choice Questions',
-                style: TextStyle(
-                  fontSize: 18,
-                  color: Colors.white70,
+              // AP Classes Grid
+              Expanded(
+                child: Padding(
+                  padding: const EdgeInsets.symmetric(horizontal: 16),
+                  child: GridView.builder(
+                    gridDelegate: const SliverGridDelegateWithFixedCrossAxisCount(
+                      crossAxisCount: 2,
+                      crossAxisSpacing: 16,
+                      mainAxisSpacing: 16,
+                      childAspectRatio: 0.85,
+                    ),
+                    itemCount: apClasses.length,
+                    itemBuilder: (context, index) {
+                      final apClass = apClasses[index];
+                      return _buildAPClassCard(apClass);
+                    },
+                  ),
                 ),
               ),
-              SizedBox(height: 30),
-              Text(
-                'Coming Soon...',
-                style: TextStyle(
-                  fontSize: 16,
-                  color: Colors.orange,
-                  fontStyle: FontStyle.italic,
-                ),
-              ),
+              const SizedBox(height: 20),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildAPClassCard(Map<String, dynamic> apClass) {
+    return Container(
+      decoration: BoxDecoration(
+        borderRadius: BorderRadius.circular(20),
+        boxShadow: [
+          BoxShadow(
+            color: apClass['color'][0].withOpacity(0.3),
+            blurRadius: 15,
+            offset: const Offset(0, 8),
+          ),
+        ],
+      ),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            // TODO: Navigate to specific AP class MCQ screen
+            ScaffoldMessenger.of(context).showSnackBar(
+              SnackBar(
+                content: Text('${apClass['name']} MCQ coming soon!'),
+                backgroundColor: apClass['color'][0],
+                duration: const Duration(seconds: 2),
+              ),
+            );
+          },
+          borderRadius: BorderRadius.circular(20),
+          child: Container(
+            decoration: BoxDecoration(
+              borderRadius: BorderRadius.circular(20),
+              gradient: LinearGradient(
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+                colors: apClass['color'],
+              ),
+            ),
+            child: Padding(
+              padding: const EdgeInsets.all(16),
+              child: Column(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      shape: BoxShape.circle,
+                    ),
+                    child: Icon(
+                      apClass['icon'],
+                      size: 32,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 12),
+                  Text(
+                    apClass['name'],
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 8),
+                  Text(
+                    apClass['description'],
+                    style: TextStyle(
+                      fontSize: 12,
+                      color: Colors.white.withOpacity(0.9),
+                    ),
+                    textAlign: TextAlign.center,
+                    maxLines: 2,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.2),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: const Text(
+                      'MCQ',
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
           ),
         ),
       ),
