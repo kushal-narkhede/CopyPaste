@@ -1626,8 +1626,7 @@ class _MainScreenState extends State<MainScreen> {
           ),
         ],
       ),
-      floatingActionButton: (_currentIndex ==
-              0) // Show on all Learn tab sub-tabs
+      floatingActionButton: (_currentIndex == 0 && _learnTabIndex == 0) // Show only on My Sets tab
           ? Padding(
               padding: const EdgeInsets.only(bottom: 16.0, right: 16.0),
               child: Column(
