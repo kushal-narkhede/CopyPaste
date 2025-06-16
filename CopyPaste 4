@@ -2890,45 +2890,28 @@ class _MCQManagerState extends State<MCQManager> {
   // Add import functionality for MCQ sets
   Future<void> _importMCQSet(String subjectName) async {
     try {
-      // Create a unique set name for MCQ sets
-      final setName = '${subjectName} - MCQ';
-      
-      // Check if set already exists in database
-      final existingSets = await _dbHelper.getPremadeStudySets();
-      final existingSet = existingSets.where((set) => set['name'] == setName).toList();
-      
-      int studySetId;
-      
-      if (existingSet.isEmpty) {
-        // Create new study set directly in database with is_premade=1
-        final db = await _dbHelper.database;
-        studySetId = await db.insert('study_sets', {
-          'name': setName,
-          'description': 'Multiple choice questions for $subjectName',
-          'username': 'system',
-          'is_premade': 1,
-          'created_at': DateTime.now().toIso8601String(),
-        });
-        
-        // Add questions to the set
-        final selectedClass = apClasses.firstWhere((cls) => cls['name'] == subjectName);
-        final questions = selectedClass['questions'] as List;
-        
-        for (var question in questions) {
-          await _dbHelper.addQuestionToStudySet(
-            studySetId,
-            question['question'],
-            question['options'][question['correct']],
-            List<String>.from(question['options']),
+      // The set name should match the one in PremadeStudySetsRepository
+      final setName = subjectName;
+      // Find the set in the database
+      final premadeSets = await _dbHelper.getPremadeStudySets();
+      final dbSet = premadeSets.firstWhere(
+        (set) => set['name'] == setName,
+        orElse: () => {},
+      );
+      if (dbSet.isEmpty) {
+        if (mounted) {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Set not found in premade sets!'),
+              backgroundColor: Colors.red,
+            ),
           );
         }
-      } else {
-        studySetId = existingSet.first['id'];
+        return;
       }
-      
+      final studySetId = dbSet['id'];
       // Import the set for the user
       await _dbHelper.importPremadeSet(widget.username, studySetId);
-      
       // Show success message
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
@@ -2939,10 +2922,8 @@ class _MCQManagerState extends State<MCQManager> {
           ),
         );
       }
-      
       // Notify parent to refresh
       widget.onSetImported?.call();
-      
     } catch (e) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
