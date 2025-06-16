@@ -2199,7 +2199,12 @@ class _MCQManagerState extends State<MCQManager> {
                   child: ElevatedButton(
                     onPressed: () {
                       // Navigate to FRQ Manager
-                      Navigator.pushNamed(context, '/frq-manager');
+                      Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                          builder: (context) => const FRQManager(),
+                        ),
+                      );
                     },
                     style: ElevatedButton.styleFrom(
                       backgroundColor: Colors.green[600],
