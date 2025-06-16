@@ -486,7 +486,7 @@ Generate exactly $numberOfQuestions questions for $selectedSubject:
           heroTag: "chatFAB",
         ),
         appBar: AppBar(
-          title: Text("QuestAI Quiz App"),
+          title: Text("QuestAI Chat"),
           backgroundColor: Colors.purple,
         ),
         body: Stack(
@@ -742,7 +742,7 @@ Generate exactly $numberOfQuestions questions for $selectedSubject:
                                       ),
                                       SizedBox(width: 12),
                                       Text(
-                                        "Generating...",
+                                        "Starting...",
                                         style: TextStyle(
                                           color: Colors.white,
                                           fontSize: 16,
@@ -757,7 +757,7 @@ Generate exactly $numberOfQuestions questions for $selectedSubject:
                                       Icon(Icons.play_arrow, color: Colors.white),
                                       SizedBox(width: 8),
                                       Text(
-                                        "Generate Quiz",
+                                        "Start Quiz",
                                         style: TextStyle(
                                           color: Colors.white,
                                           fontSize: 16,
