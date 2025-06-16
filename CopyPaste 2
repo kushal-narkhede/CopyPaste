@@ -8,59 +8,288 @@ class MCQManager extends StatefulWidget {
 }
 
 class _MCQManagerState extends State<MCQManager> {
+  int currentQuestionIndex = 0;
+  int currentScore = 0;
+  bool showResults = false;
+  Map<int, int> userAnswers = {};
+  String? selectedSubject;
+
   final List<Map<String, dynamic>> apClasses = [
     {
       'name': 'AP Calculus AB',
       'color': [Color(0xFF667eea), Color(0xFF764ba2)],
       'icon': Icons.functions,
       'description': 'Differential & Integral Calculus',
+      'questions': [
+        {
+          'question': 'What is the derivative of f(x) = x³ + 2x² - 5x + 3?',
+          'options': ['3x² + 4x - 5', '3x² + 4x + 5', '3x² - 4x - 5', '3x² - 4x + 5'],
+          'correct': 0,
+        },
+        {
+          'question': 'Find the integral of ∫(2x + 3)dx',
+          'options': ['x² + 3x + C', 'x² + 3x', '2x² + 3x + C', 'x² + 6x + C'],
+          'correct': 0,
+        },
+        {
+          'question': 'What is the limit of (x² - 4)/(x - 2) as x approaches 2?',
+          'options': ['0', '2', '4', 'Undefined'],
+          'correct': 2,
+        },
+        {
+          'question': 'Find the derivative of f(x) = e^x * sin(x)',
+          'options': ['e^x * cos(x)', 'e^x * (sin(x) + cos(x))', 'e^x * sin(x)', 'e^x * (sin(x) - cos(x))'],
+          'correct': 1,
+        },
+        {
+          'question': 'What is the area under the curve y = x² from x = 0 to x = 2?',
+          'options': ['2', '4', '8/3', '16/3'],
+          'correct': 2,
+        },
+      ],
     },
     {
       'name': 'AP Calculus BC',
       'color': [Color(0xFFf093fb), Color(0xFFf5576c)],
       'icon': Icons.trending_up,
       'description': 'Advanced Calculus & Series',
+      'questions': [
+        {
+          'question': 'Find the sum of the infinite series Σ(1/2^n) from n=0 to ∞',
+          'options': ['1', '2', '1/2', '∞'],
+          'correct': 1,
+        },
+        {
+          'question': 'What is the radius of convergence for the power series Σ(x^n/n!) from n=0 to ∞?',
+          'options': ['0', '1', '∞', 'e'],
+          'correct': 2,
+        },
+        {
+          'question': 'Find the parametric derivative dy/dx for x = t², y = t³',
+          'options': ['3t/2', '2t/3', '3t²/2', '2t²/3'],
+          'correct': 0,
+        },
+        {
+          'question': 'What is the Taylor series for e^x centered at x = 0?',
+          'options': ['Σ(x^n/n!)', 'Σ(x^n)', 'Σ(x^n/n)', 'Σ(x^n/n²)'],
+          'correct': 0,
+        },
+        {
+          'question': 'Find the arc length of y = x² from x = 0 to x = 1',
+          'options': ['√5/2', '√5', '2√5', '√5/4'],
+          'correct': 0,
+        },
+      ],
     },
     {
       'name': 'AP Computer Science A',
       'color': [Color(0xFF4facfe), Color(0xFF00f2fe)],
       'icon': Icons.code,
       'description': 'Java Programming',
+      'questions': [
+        {
+          'question': 'What is the output of: System.out.println(5 / 2);',
+          'options': ['2.5', '2', '2.0', 'Error'],
+          'correct': 1,
+        },
+        {
+          'question': 'Which data structure uses LIFO (Last In, First Out)?',
+          'options': ['Queue', 'Stack', 'Array', 'LinkedList'],
+          'correct': 1,
+        },
+        {
+          'question': 'What is the time complexity of binary search?',
+          'options': ['O(1)', 'O(log n)', 'O(n)', 'O(n²)'],
+          'correct': 1,
+        },
+        {
+          'question': 'Which keyword is used to inherit from a class?',
+          'options': ['implements', 'extends', 'inherits', 'super'],
+          'correct': 1,
+        },
+        {
+          'question': 'What is the output of: String s = "Hello"; System.out.println(s.length());',
+          'options': ['4', '5', '6', 'Error'],
+          'correct': 1,
+        },
+      ],
     },
     {
       'name': 'AP Computer Science Principles',
       'color': [Color(0xFF43e97b), Color(0xFF38f9d7)],
       'icon': Icons.computer,
       'description': 'Computational Thinking',
+      'questions': [
+        {
+          'question': 'What is the primary purpose of an algorithm?',
+          'options': ['To solve problems', 'To create programs', 'To store data', 'To display graphics'],
+          'correct': 0,
+        },
+        {
+          'question': 'Which of the following is an example of abstraction?',
+          'options': ['Using a car without knowing how the engine works', 'Writing code', 'Debugging', 'Testing'],
+          'correct': 0,
+        },
+        {
+          'question': 'What does HTTP stand for?',
+          'options': ['HyperText Transfer Protocol', 'High Tech Transfer Process', 'Home Transfer Protocol', 'Hyper Transfer Process'],
+          'correct': 0,
+        },
+        {
+          'question': 'Which programming paradigm focuses on objects?',
+          'options': ['Procedural', 'Object-Oriented', 'Functional', 'Logical'],
+          'correct': 1,
+        },
+        {
+          'question': 'What is the purpose of a firewall?',
+          'options': ['To speed up internet', 'To protect against unauthorized access', 'To store data', 'To create backups'],
+          'correct': 1,
+        },
+      ],
     },
     {
       'name': 'AP Physics 1',
       'color': [Color(0xFFfa709a), Color(0xFFfee140)],
       'icon': Icons.science,
       'description': 'Algebra-Based Physics',
+      'questions': [
+        {
+          'question': 'What is the SI unit for force?',
+          'options': ['Joule', 'Newton', 'Watt', 'Pascal'],
+          'correct': 1,
+        },
+        {
+          'question': 'A car accelerates from 0 to 60 m/s in 10 seconds. What is its acceleration?',
+          'options': ['6 m/s²', '60 m/s²', '600 m/s²', '0.6 m/s²'],
+          'correct': 0,
+        },
+        {
+          'question': 'What is the formula for kinetic energy?',
+          'options': ['KE = mgh', 'KE = ½mv²', 'KE = mv', 'KE = ma'],
+          'correct': 1,
+        },
+        {
+          'question': 'Which law states that for every action there is an equal and opposite reaction?',
+          'options': ['Newton\'s First Law', 'Newton\'s Second Law', 'Newton\'s Third Law', 'Law of Gravity'],
+          'correct': 2,
+        },
+        {
+          'question': 'What is the unit for power?',
+          'options': ['Joule', 'Newton', 'Watt', 'Meter'],
+          'correct': 2,
+        },
+      ],
     },
     {
       'name': 'AP Physics 2',
       'color': [Color(0xFFa8edea), Color(0xFFfed6e3)],
       'icon': Icons.waves,
       'description': 'Advanced Physics Concepts',
+      'questions': [
+        {
+          'question': 'What is the relationship between pressure and volume in Boyle\'s Law?',
+          'options': ['Directly proportional', 'Inversely proportional', 'No relationship', 'Exponential'],
+          'correct': 1,
+        },
+        {
+          'question': 'What is the speed of light in vacuum?',
+          'options': ['3 × 10⁸ m/s', '3 × 10⁶ m/s', '3 × 10⁵ m/s', '3 × 10⁷ m/s'],
+          'correct': 0,
+        },
+        {
+          'question': 'Which wave can travel through vacuum?',
+          'options': ['Sound waves', 'Water waves', 'Electromagnetic waves', 'Seismic waves'],
+          'correct': 2,
+        },
+        {
+          'question': 'What is the unit of electric charge?',
+          'options': ['Ampere', 'Volt', 'Coulomb', 'Ohm'],
+          'correct': 2,
+        },
+        {
+          'question': 'What is the principle of conservation of energy?',
+          'options': ['Energy cannot be created or destroyed', 'Energy can be created', 'Energy can be destroyed', 'Energy is always increasing'],
+          'correct': 0,
+        },
+      ],
     },
     {
       'name': 'AP Chemistry',
       'color': [Color(0xFFffecd2), Color(0xFFfcb69f)],
       'icon': Icons.science_outlined,
       'description': 'Chemical Principles',
+      'questions': [
+        {
+          'question': 'What is the atomic number of carbon?',
+          'options': ['6', '12', '14', '8'],
+          'correct': 0,
+        },
+        {
+          'question': 'What type of bond is formed between sodium and chlorine in NaCl?',
+          'options': ['Covalent', 'Ionic', 'Metallic', 'Hydrogen'],
+          'correct': 1,
+        },
+        {
+          'question': 'What is the pH of a neutral solution?',
+          'options': ['0', '7', '14', '10'],
+          'correct': 1,
+        },
+        {
+          'question': 'What is the molecular formula for glucose?',
+          'options': ['C₆H₁₂O₆', 'C₆H₁₀O₅', 'C₅H₁₂O₆', 'C₆H₁₂O₅'],
+          'correct': 0,
+        },
+        {
+          'question': 'What is the charge of an electron?',
+          'options': ['Positive', 'Negative', 'Neutral', 'Variable'],
+          'correct': 1,
+        },
+      ],
     },
     {
       'name': 'AP Biology',
       'color': [Color(0xFF84fab0), Color(0xFF8fd3f4)],
       'icon': Icons.biotech,
       'description': 'Biological Systems',
+      'questions': [
+        {
+          'question': 'What is the powerhouse of the cell?',
+          'options': ['Nucleus', 'Mitochondria', 'Endoplasmic reticulum', 'Golgi apparatus'],
+          'correct': 1,
+        },
+        {
+          'question': 'What is the process by which plants make their own food?',
+          'options': ['Respiration', 'Photosynthesis', 'Digestion', 'Fermentation'],
+          'correct': 1,
+        },
+        {
+          'question': 'What are the building blocks of proteins?',
+          'options': ['Nucleotides', 'Amino acids', 'Fatty acids', 'Monosaccharides'],
+          'correct': 1,
+        },
+        {
+          'question': 'What is the genetic material of most organisms?',
+          'options': ['RNA', 'DNA', 'Protein', 'Lipid'],
+          'correct': 1,
+        },
+        {
+          'question': 'What is the process of cell division called?',
+          'options': ['Mitosis', 'Meiosis', 'Both A and B', 'Neither A nor B'],
+          'correct': 2,
+        },
+      ],
     },
   ];
 
   @override
   Widget build(BuildContext context) {
+    if (selectedSubject != null) {
+      return _buildQuizScreen();
+    }
+    return _buildSubjectSelectionScreen();
+  }
+
+  Widget _buildSubjectSelectionScreen() {
     return Scaffold(
       appBar: AppBar(
         title: const Text(
@@ -158,14 +387,13 @@ class _MCQManagerState extends State<MCQManager> {
         color: Colors.transparent,
         child: InkWell(
           onTap: () {
-            // TODO: Navigate to specific AP class MCQ screen
-            ScaffoldMessenger.of(context).showSnackBar(
-              SnackBar(
-                content: Text('${apClass['name']} MCQ coming soon!'),
-                backgroundColor: apClass['color'][0],
-                duration: const Duration(seconds: 2),
-              ),
-            );
+            setState(() {
+              selectedSubject = apClass['name'];
+              currentQuestionIndex = 0;
+              currentScore = 0;
+              showResults = false;
+              userAnswers.clear();
+            });
           },
           borderRadius: BorderRadius.circular(20),
           child: Container(
@@ -225,7 +453,7 @@ class _MCQManagerState extends State<MCQManager> {
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: const Text(
-                      'MCQ',
+                      '5 Questions',
                       style: TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
@@ -240,5 +468,381 @@ class _MCQManagerState extends State<MCQManager> {
         ),
       ),
     );
+  }
+
+  Widget _buildQuizScreen() {
+    final selectedClass = apClasses.firstWhere((cls) => cls['name'] == selectedSubject);
+    final questions = selectedClass['questions'] as List;
+    
+    if (showResults) {
+      return _buildResultsScreen(selectedClass, questions);
+    }
+
+    final currentQuestion = questions[currentQuestionIndex];
+
+    return Scaffold(
+      appBar: AppBar(
+        title: Text(
+          selectedSubject!,
+          style: const TextStyle(
+            fontWeight: FontWeight.bold,
+            fontSize: 20,
+          ),
+        ),
+        backgroundColor: selectedClass['color'][0],
+        foregroundColor: Colors.white,
+        elevation: 0,
+        leading: IconButton(
+          icon: const Icon(Icons.arrow_back),
+          onPressed: () {
+            setState(() {
+              selectedSubject = null;
+              currentQuestionIndex = 0;
+              currentScore = 0;
+              showResults = false;
+              userAnswers.clear();
+            });
+          },
+        ),
+      ),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [selectedClass['color'][0].withOpacity(0.1), selectedClass['color'][1].withOpacity(0.1)],
+          ),
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              children: [
+                // Progress Bar
+                LinearProgressIndicator(
+                  value: (currentQuestionIndex + 1) / questions.length,
+                  backgroundColor: Colors.grey.withOpacity(0.3),
+                  valueColor: AlwaysStoppedAnimation<Color>(selectedClass['color'][0]),
+                ),
+                const SizedBox(height: 10),
+                Text(
+                  'Question ${currentQuestionIndex + 1} of ${questions.length}',
+                  style: TextStyle(
+                    fontSize: 16,
+                    color: Colors.grey[600],
+                    fontWeight: FontWeight.w500,
+                  ),
+                ),
+                const SizedBox(height: 30),
+                
+                // Question
+                Expanded(
+                  child: SingleChildScrollView(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          currentQuestion['question'],
+                          style: const TextStyle(
+                            fontSize: 20,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.black87,
+                          ),
+                        ),
+                        const SizedBox(height: 30),
+                        
+                        // Options
+                        ...List.generate(
+                          currentQuestion['options'].length,
+                          (index) => _buildOptionCard(
+                            currentQuestion['options'][index],
+                            index,
+                            currentQuestion,
+                            selectedClass,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                
+                // Navigation Buttons
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    if (currentQuestionIndex > 0)
+                      ElevatedButton(
+                        onPressed: () {
+                          setState(() {
+                            currentQuestionIndex--;
+                          });
+                        },
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.grey,
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                        ),
+                        child: const Text('Previous'),
+                      )
+                    else
+                      const SizedBox(width: 80),
+                    
+                    if (currentQuestionIndex < questions.length - 1)
+                      ElevatedButton(
+                        onPressed: userAnswers.containsKey(currentQuestionIndex)
+                            ? () {
+                                setState(() {
+                                  currentQuestionIndex++;
+                                });
+                              }
+                            : null,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: selectedClass['color'][0],
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                        ),
+                        child: const Text('Next'),
+                      )
+                    else
+                      ElevatedButton(
+                        onPressed: userAnswers.containsKey(currentQuestionIndex)
+                            ? () {
+                                _calculateScore(questions);
+                                setState(() {
+                                  showResults = true;
+                                });
+                              }
+                            : null,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.green,
+                          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                        ),
+                        child: const Text('Finish'),
+                      ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildOptionCard(String option, int optionIndex, Map<String, dynamic> question, Map<String, dynamic> selectedClass) {
+    final isSelected = userAnswers[currentQuestionIndex] == optionIndex;
+    final isCorrect = question['correct'] == optionIndex;
+    
+    Color backgroundColor = Colors.white;
+    Color textColor = Colors.black87;
+    
+    if (isSelected) {
+      backgroundColor = isCorrect ? Colors.green : Colors.red;
+      textColor = Colors.white;
+    }
+    
+    return Container(
+      margin: const EdgeInsets.only(bottom: 12),
+      child: Material(
+        color: Colors.transparent,
+        child: InkWell(
+          onTap: () {
+            setState(() {
+              userAnswers[currentQuestionIndex] = optionIndex;
+            });
+          },
+          borderRadius: BorderRadius.circular(12),
+          child: Container(
+            width: double.infinity,
+            padding: const EdgeInsets.all(16),
+            decoration: BoxDecoration(
+              color: backgroundColor,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(
+                color: isSelected ? Colors.transparent : Colors.grey.withOpacity(0.3),
+                width: 2,
+              ),
+              boxShadow: [
+                BoxShadow(
+                  color: Colors.black.withOpacity(0.1),
+                  blurRadius: 4,
+                  offset: const Offset(0, 2),
+                ),
+              ],
+            ),
+            child: Row(
+              children: [
+                Container(
+                  width: 30,
+                  height: 30,
+                  decoration: BoxDecoration(
+                    color: isSelected ? Colors.white.withOpacity(0.2) : selectedClass['color'][0].withOpacity(0.1),
+                    shape: BoxShape.circle,
+                  ),
+                  child: Center(
+                    child: Text(
+                      String.fromCharCode(65 + optionIndex), // A, B, C, D
+                      style: TextStyle(
+                        fontWeight: FontWeight.bold,
+                        color: isSelected ? Colors.white : selectedClass['color'][0],
+                      ),
+                    ),
+                  ),
+                ),
+                const SizedBox(width: 16),
+                Expanded(
+                  child: Text(
+                    option,
+                    style: TextStyle(
+                      fontSize: 16,
+                      color: textColor,
+                    ),
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  void _calculateScore(List questions) {
+    currentScore = 0;
+    for (int i = 0; i < questions.length; i++) {
+      if (userAnswers.containsKey(i) && userAnswers[i] == questions[i]['correct']) {
+        currentScore++;
+      }
+    }
+  }
+
+  Widget _buildResultsScreen(Map<String, dynamic> selectedClass, List questions) {
+    final percentage = (currentScore / questions.length * 100).round();
+    
+    return Scaffold(
+      appBar: AppBar(
+        title: const Text('Quiz Results'),
+        backgroundColor: selectedClass['color'][0],
+        foregroundColor: Colors.white,
+        elevation: 0,
+        automaticallyImplyLeading: false,
+      ),
+      body: Container(
+        decoration: BoxDecoration(
+          gradient: LinearGradient(
+            begin: Alignment.topCenter,
+            end: Alignment.bottomCenter,
+            colors: [selectedClass['color'][0].withOpacity(0.1), selectedClass['color'][1].withOpacity(0.1)],
+          ),
+        ),
+        child: SafeArea(
+          child: Padding(
+            padding: const EdgeInsets.all(20),
+            child: Column(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                // Score Circle
+                Container(
+                  width: 200,
+                  height: 200,
+                  decoration: BoxDecoration(
+                    shape: BoxShape.circle,
+                    gradient: LinearGradient(
+                      colors: selectedClass['color'],
+                    ),
+                    boxShadow: [
+                      BoxShadow(
+                        color: selectedClass['color'][0].withOpacity(0.3),
+                        blurRadius: 20,
+                        offset: const Offset(0, 10),
+                      ),
+                    ],
+                  ),
+                  child: Center(
+                    child: Column(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          '$currentScore/${questions.length}',
+                          style: const TextStyle(
+                            fontSize: 32,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                        Text(
+                          '$percentage%',
+                          style: const TextStyle(
+                            fontSize: 24,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                ),
+                const SizedBox(height: 40),
+                
+                // Performance Message
+                Text(
+                  _getPerformanceMessage(percentage),
+                  style: const TextStyle(
+                    fontSize: 24,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                  textAlign: TextAlign.center,
+                ),
+                const SizedBox(height: 20),
+                
+                // Action Buttons
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceEvenly,
+                  children: [
+                    ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          selectedSubject = null;
+                          currentQuestionIndex = 0;
+                          currentScore = 0;
+                          showResults = false;
+                          userAnswers.clear();
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.grey,
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      ),
+                      child: const Text('New Quiz'),
+                    ),
+                    ElevatedButton(
+                      onPressed: () {
+                        setState(() {
+                          currentQuestionIndex = 0;
+                          currentScore = 0;
+                          showResults = false;
+                          userAnswers.clear();
+                        });
+                      },
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: selectedClass['color'][0],
+                        padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+                      ),
+                      child: const Text('Retry'),
+                    ),
+                  ],
+                ),
+              ],
+            ),
+          ),
+        ),
+      ),
+    );
+  }
+
+  String _getPerformanceMessage(int percentage) {
+    if (percentage >= 90) return 'Excellent! 🎉';
+    if (percentage >= 80) return 'Great Job! 👍';
+    if (percentage >= 70) return 'Good Work! 👏';
+    if (percentage >= 60) return 'Not Bad! 💪';
+    return 'Keep Practicing! 📚';
   }
 } 
