@@ -1642,7 +1642,7 @@ class _MainScreenState extends State<MainScreen> {
                     },
                     backgroundColor: Colors.orange,
                     icon: const Icon(Icons.quiz),
-                    label: const Text('MCQ'),
+                    label: const Text('Browse Sets'),
                   ),
                   const SizedBox(height: 16),
                   FloatingActionButton.extended(
@@ -1650,7 +1650,7 @@ class _MainScreenState extends State<MainScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const HomePage(),
+                          builder: (context) => HomePage(username: widget.username),
                         ),
                       );
                     },
