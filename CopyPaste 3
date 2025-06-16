@@ -461,7 +461,7 @@ Generate exactly $numberOfQuestions questions for $selectedSubject:
     final isCorrect =
         selectedAnswer == scienceQuestions[currentQuestionIndex]["answer"];
     setState(() {
-      selectedAnswer = null;
+      // Don't clear selectedAnswer - keep it to show wrong answer highlighting
       showAnswer = true;
       if (isCorrect) {
         answeredCorrectly[currentQuestionIndex] = true;
@@ -525,20 +525,6 @@ Generate exactly $numberOfQuestions questions for $selectedSubject:
                                     ? _buildQuizArea()
                                     : _buildHomeScreen(),
                           ),
-                          // Debug info
-                          if (showQuizArea && scienceQuestions.isNotEmpty)
-                            Container(
-                              padding: EdgeInsets.all(8),
-                              margin: EdgeInsets.only(bottom: 8),
-                              decoration: BoxDecoration(
-                                color: Colors.red.withOpacity(0.2),
-                                borderRadius: BorderRadius.circular(8),
-                              ),
-                              child: Text(
-                                'DEBUG: Quiz Area Active - ${scienceQuestions.length} questions, Index: $currentQuestionIndex',
-                                style: TextStyle(color: Colors.white, fontSize: 12),
-                              ),
-                            ),
                         ],
                       ),
                     );
