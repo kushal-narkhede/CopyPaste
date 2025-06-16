@@ -1650,20 +1650,6 @@ class _MainScreenState extends State<MainScreen> {
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (context) => const FRQManager(),
-                        ),
-                      );
-                    },
-                    backgroundColor: Colors.purple,
-                    icon: const Icon(Icons.menu_book),
-                    label: const Text('AP FRQs'),
-                  ),
-                  const SizedBox(height: 16),
-                  FloatingActionButton.extended(
-                    onPressed: () {
-                      Navigator.push(
-                        context,
-                        MaterialPageRoute(
                           builder: (context) => const HomePage(),
                         ),
                       );
