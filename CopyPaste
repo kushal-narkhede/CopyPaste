@@ -4056,6 +4056,8 @@ class _PracticeModeScreenState extends State<PracticeModeScreen> {
   bool _showChat = false;
   late ChatBloc _chatBloc;
   final TextEditingController _chatController = TextEditingController();
+  double _chatHeightRatio = 0.5; // Default 50% of available area
+  bool _isResizing = false;
 
   @override
   void initState() {
