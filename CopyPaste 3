@@ -922,7 +922,7 @@ Generate exactly $numberOfQuestions questions for $selectedSubject:
             ),
           ],
         ),
-        const SizedBox(height: 24),
+        const SizedBox(height: 16),
 
         // Progress bar
         ClipRRect(
@@ -934,25 +934,7 @@ Generate exactly $numberOfQuestions questions for $selectedSubject:
             minHeight: 8,
           ),
         ),
-        const SizedBox(height: 32),
-
-        // Score
-        Container(
-          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
-          decoration: BoxDecoration(
-            color: Colors.amber.withOpacity(0.2),
-            borderRadius: BorderRadius.circular(20),
-          ),
-          child: Text(
-            'Score: ${answeredCorrectly.where((correct) => correct).length}',
-            style: const TextStyle(
-              fontSize: 18,
-              fontWeight: FontWeight.bold,
-              color: Colors.amber,
-            ),
-          ),
-        ),
-        const SizedBox(height: 32),
+        const SizedBox(height: 16),
 
         // Question
         Container(
@@ -999,7 +981,7 @@ Generate exactly $numberOfQuestions questions for $selectedSubject:
             ],
           ),
         ),
-        const SizedBox(height: 32),
+        const SizedBox(height: 16),
 
         // Answer options
         Flexible(
