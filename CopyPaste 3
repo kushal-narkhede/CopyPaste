@@ -19,6 +19,17 @@ import 'package:pdf/widgets.dart' as pw;
 import 'package:printing/printing.dart';
 import 'package:student_learning_app/models/chat_message_model.dart';
 
+// Manual structure for AP Comp Sci 2024
+const List<String> manualQuestions = [
+  'Q1a',
+  'Q1b',
+  'Q2',
+  'Q3a',
+  'Q3b',
+  'Q4a',
+  'Q4b'
+];
+
 // SpaceBackground widget for the space theme
 class SpaceBackground extends StatelessWidget {
   const SpaceBackground({super.key});
@@ -93,23 +104,13 @@ class _FRQManagerState extends State<FRQManager> {
         children: [
           const SpaceBackground(),
           SafeArea(
-            child: FRQTextDisplayScreen(year: '2024'),
+            child: FRQTextDisplayScreen(year: '2024', frqCount: widget.frqCount),
           ),
         ],
       ),
     );
   }
 
-  // Manual structure for AP Comp Sci 2024
-  final List<String> manualQuestions = [
-    'Q1a',
-    'Q1b',
-    'Q2',
-    'Q3a',
-    'Q3b',
-    'Q4a',
-    'Q4b'
-  ];
   String? selectedSubpart;
   Map<String, String> answers = {};
 
@@ -329,8 +330,9 @@ class _FRQManagerState extends State<FRQManager> {
 class PDFViewerScreen extends StatefulWidget {
   final String filePath;
   final String year;
+  final int frqCount;
   const PDFViewerScreen(
-      {super.key, required this.filePath, required this.year});
+      {super.key, required this.filePath, required this.year, required this.frqCount});
 
   @override
   State<PDFViewerScreen> createState() => _PDFViewerScreenState();
@@ -345,16 +347,6 @@ class _PDFViewerScreenState extends State<PDFViewerScreen> {
   double _currentZoom = 1.0;
   String? lastAIResponse;
 
-  // Manual structure for AP Comp Sci 2024
-  final List<String> manualQuestions = [
-    'Q1a',
-    'Q1b',
-    'Q2',
-    'Q3a',
-    'Q3b',
-    'Q4a',
-    'Q4b'
-  ];
   String? selectedSubpart;
   Map<String, String> answers = {};
 
@@ -417,7 +409,7 @@ class _PDFViewerScreenState extends State<PDFViewerScreen> {
 
       // Add user answers to the prompt
       promptContent.writeln('=== User Answers ===');
-      for (String question in manualQuestions) {
+      for (String question in manualQuestions.take(widget.frqCount)) {
         promptContent.writeln('\nQuestion: $question');
         promptContent.writeln('Answer: ${answers[question] ?? "Not answered"}');
         promptContent.writeln('-------------------');
@@ -935,7 +927,7 @@ class _PDFViewerScreenState extends State<PDFViewerScreen> {
                               child: Wrap(
                                 spacing: 8,
                                 runSpacing: 8,
-                                children: manualQuestions.map((q) {
+                                children: manualQuestions.take(widget.frqCount).map((q) {
                                   return ElevatedButton(
                                     onPressed: () {
                                       setState(() {
@@ -963,7 +955,7 @@ class _PDFViewerScreenState extends State<PDFViewerScreen> {
                             onPressed: () async {
                               // Print all user answers to console
                               print('\n=== User Answers ===');
-                              for (String question in manualQuestions) {
+                              for (String question in manualQuestions.take(widget.frqCount)) {
                                 print('Question: $question');
                                 print(
                                     'Answer: ${answers[question] ?? "Not answered"}');
@@ -1121,8 +1113,9 @@ class _PDFViewerScreenState extends State<PDFViewerScreen> {
 
 class FRQTextDisplayScreen extends StatefulWidget {
   final String year;
+  final int frqCount;
   
-  const FRQTextDisplayScreen({super.key, required this.year});
+  const FRQTextDisplayScreen({super.key, required this.year, required this.frqCount});
 
   @override
   State<FRQTextDisplayScreen> createState() => _FRQTextDisplayScreenState();
@@ -1409,9 +1402,9 @@ class _FRQTextDisplayScreenState extends State<FRQTextDisplayScreen> {
 
       // Add user answers to the prompt
       promptContent.writeln('=== User Answers ===');
-      for (String questionKey in ['Q1a', 'Q1b', 'Q2', 'Q3a', 'Q3b', 'Q4a', 'Q4b']) {
-        promptContent.writeln('\nQuestion: $questionKey');
-        promptContent.writeln('Answer: ${answers[questionKey] ?? "Not answered"}');
+      for (String question in manualQuestions.take(widget.frqCount)) {
+        promptContent.writeln('\nQuestion: $question');
+        promptContent.writeln('Answer: ${answers[question] ?? "Not answered"}');
         promptContent.writeln('-------------------');
       }
 
