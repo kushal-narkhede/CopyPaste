@@ -2051,7 +2051,15 @@ class _LearnTabState extends State<LearnTab>
   }
 
   Widget _buildQuickPlayTab() {
-    return HomePage(username: widget.username);
+    return Container(
+      color: const Color(0xFF0A0E21),
+      child: const Center(
+        child: Text(
+          '',
+          style: TextStyle(color: Colors.white),
+        ),
+      ),
+    );
   }
 
   Widget _buildQuickPlay() {
