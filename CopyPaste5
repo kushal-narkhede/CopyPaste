@@ -1,523 +1,1371 @@
+import 'package:flutter/material.dart';
+import 'package:student_learning_app/bloc/chat_bloc.dart';
+import 'package:flutter_bloc/flutter_bloc.dart';
+import '../models/chat_message_model.dart';
+import '../database_helper.dart';
+import 'package:student_learning_app/mcq_manager.dart';
+import 'dart:math';
 
------------------------------------------------------------------------------
-Question 1. This question simulates birds or possibly a bear eating at a bird feeder. The following Feeder class
-contains information about how much food is in the bird feeder and simulates how much food is eaten. You
-will write two methods of the Feeder class.
-public class Feeder
-{
-/**
-* The amount of food, in grams, currently in the bird feeder; initialized in the constructor and
-* always greater than or equal to zero
-*/
-private int currentFood;
-/**
-* Simulates one day with numBirds birds or possibly a bear at the bird feeder,
-* as described in part (a)
-* Precondition: numBirds > 0
-*/
-public void simulateOneDay(int numBirds)
-{ /* to be implemented in part (a) */ }
-/**
-* Returns the number of days birds or a bear found food to eat at the feeder in this simulation,
-* as described in part (b)
-* Preconditions: numBirds > 0, numDays > 0
-*/
-public int simulateManyDays(int numBirds, int numDays)
-{ /* to be implemented in part (b) */ }
-// There may be instance variables, constructors, or methods that are not shown.
+class HomePage extends StatefulWidget {
+  final String username;
+
+  const HomePage({
+    super.key,
+    required this.username,
+  });
+
+  @override
+  _HomePageState createState() => _HomePageState();
 }
 
+class _HomePageState extends State<HomePage> {
+  final TextEditingController followupController = TextEditingController();
+  final ScrollController _scrollController = ScrollController();
+  late final ChatBloc _chatBloc; // Create bloc instance here
+  final DatabaseHelper _dbHelper = DatabaseHelper();
 
+  int currentQuestionIndex = 0;
+  String? selectedAnswer;
+  bool isWaitingForQuestions = false;
+  String username = ''; // Add username field
+  int _score = 0;
 
+  List<Map<String, dynamic>> scienceQuestions = [];
+  List<bool> answeredCorrectly =
+      []; // Track which questions were answered correctly
 
+  bool showAnswer = false;
+  bool showQuizArea = false;
+  bool showScoreSummary =
+      false; // New variable to control score summary visibility
+  String selectedSubject = "Chemistry";
+  int numberOfQuestions = 10; // New variable for question count
 
-(a) Write the simulateOneDay method, which simulates numBirds birds or possibly a bear at the
-feeder for one day. The method determines the amount of food taken from the feeder on this day and
-updates the currentFood instance variable. The simulation accounts for normal conditions, which
-occur 95% of the time, and abnormal conditions, which occur 5% of the time.
-Under normal conditions, the simulation assumes that on any given day, only birds visit the feeder and
-that each bird at the feeder consumes the same amount of food. This standard amount consumed is
-between 10 and 50 grams of food, inclusive, in 1-gram increments. That is, on any given day, each bird
-might eat 10, 11, . . . , 49, or 50 grams of food. The amount of food eaten by each bird on a given day is
-randomly generated and each integer from 10 to 50, inclusive, has an equal chance of being chosen.
-For example, a run of the simulation might predict that for a certain day under normal conditions, each
-bird coming to the feeder will eat 11 grams of food. If 10 birds come to the feeder on that day, then a
-total of 110 grams of food will be consumed.
-If the simulated food consumed is greater than the amount of food in the feeder, the birds empty the
-feeder and the amount of food in the feeder at the end of the day is zero.
-Under abnormal conditions, a bear empties the feeder and the amount of food in the feeder at the end of
-the day is zero.
-The following examples show possible results of three calls to simulateOneDay.
-• Example 1: If the feeder initially contains 500 grams of food, the call
-simulateOneDay(12) could result in 12 birds eating 20 grams of food each,
-leaving 260 grams of food in the feeder.
-• Example 2: If the feeder initially contains 1,000 grams of food, the call
-simulateOneDay(22) could result in a bear eating all the food, leaving 0 grams of
-food in the feeder.
-• Example 3: If the feeder initially contains 100 grams of food, the call
-simulateOneDay(5) could result in 5 birds attempting to eat 30 grams of food
-each. Since the feeder initially contains less than 150 grams of food, the feeder is
-emptied, leaving 0 grams of food in the feeder.
+  List<String> subjects = [
+    "Chemistry",
+    "Physics",
+    "Biology",
+    "Mathematics",
+    "History",
+    "Geography",
+    "Computer Science",
+    "Economics"
+  ];
 
+  @override
+  void initState() {
+    super.initState();
+    _chatBloc = ChatBloc(); // Initialize bloc once
+    _loadUsername(); // Load username when page initializes
+  }
 
+  Future<void> _loadUsername() async {
+    // Get the username from shared preferences or wherever it's stored
+    // For now, we'll use a default value
+    setState(() {
+      username = widget.username; // Replace with actual username loading logic
+    });
+  }
 
+  @override
+  void dispose() {
+    _scrollController.dispose();
+    _chatBloc.close(); // Don't forget to close the bloc
+    super.dispose();
+  }
 
+  void goToNextQuestion() {
+    setState(() {
+      if (currentQuestionIndex + 1 >= scienceQuestions.length) {
+        // If we've reached the end, show score summary
+        showScoreSummary = true;
+        showQuizArea = false;
+      } else {
+        currentQuestionIndex = currentQuestionIndex + 1;
+        showAnswer = false;
+        selectedAnswer = null;
+      }
+    });
+  }
 
-Complete the simulateOneDay method.
-/**
-* Simulates one day with numBirds birds or possibly a bear at the bird feeder,
-* as described in part (a)
-* Precondition: numBirds > 0
-*/
-public void simulateOneDay(int numBirds)
+  void _scrollToBottom() {
+    if (_scrollController.hasClients) {
+      _scrollController.animateTo(
+        _scrollController.position.maxScrollExtent,
+        duration: Duration(milliseconds: 300),
+        curve: Curves.easeOut,
+      );
+    }
+  }
 
-Begin your response at the top of a new page in the separate Free Response booklet
-and fill in the appropriate circle at the top of each page to indicate the question number.
-If there are multiple parts to this question, write the part letter with your response.
-Class information for this question
-public class Feeder
-private int currentFood
-public void simulateOneDay(int numBirds)
-public int simulateManyDays(int numBirds, int numDays)
+  // Function to clear chat history
+  void _clearChatHistory() {
+    _chatBloc.add(ChatClearHistoryEvent());
+    print('Chat history cleared');
+  }
 
+  // Function to show half-screen chat modal
+  void _showChatModal({String? initialMessage}) {
+    showDialog(
+      context: context,
+      builder: (BuildContext context) {
+        return Dialog(
+          backgroundColor: Colors.grey.shade900,
+          shape: RoundedRectangleBorder(
+            borderRadius: BorderRadius.circular(20),
+          ),
+          child: Container(
+            width: MediaQuery.of(context).size.width * 0.9,
+            height: MediaQuery.of(context).size.height * 0.7,
+            padding: EdgeInsets.all(16),
+            child: Column(
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Text(
+                      'AI Assistant',
+                      style: TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                    IconButton(
+                      icon: Icon(Icons.close, color: Colors.white),
+                      onPressed: () => Navigator.of(context).pop(),
+                    ),
+                  ],
+                ),
+                Divider(color: Colors.grey),
+                Expanded(
+                  child: BlocBuilder<ChatBloc, ChatState>(
+                    bloc: _chatBloc,
+                    builder: (context, state) {
+                      if (state is ChatSuccessState) {
+                        return ListView.builder(
+                          controller: _scrollController,
+                          itemCount: state.messages.length,
+                          itemBuilder: (context, index) {
+                            final message = state.messages[index];
+                            return Container(
+                              margin: EdgeInsets.symmetric(vertical: 8),
+                              padding: EdgeInsets.all(12),
+                              decoration: BoxDecoration(
+                                color: message.role == "user"
+                                    ? Colors.blue.withOpacity(0.2)
+                                    : Colors.purple.withOpacity(0.2),
+                                borderRadius: BorderRadius.circular(12),
+                              ),
+                              child: Text(
+                                message.parts.isNotEmpty ? message.parts.first.text : 'No message content',
+                                style: TextStyle(color: Colors.white),
+                              ),
+                            );
+                          },
+                        );
+                      } else if (state is ChatErrorState) {
+                        return Center(
+                          child: Text(
+                            state.message,
+                            style: TextStyle(color: Colors.red),
+                          ),
+                        );
+                      } else {
+                        return Center(
+                          child: CircularProgressIndicator(),
+                        );
+                      }
+                    },
+                  ),
+                ),
+                Divider(color: Colors.grey),
+                Padding(
+                  padding: EdgeInsets.only(bottom: 8),
+                  child: Row(
+                    children: [
+                      Expanded(
+                        child: TextField(
+                          controller: followupController,
+                          style: TextStyle(color: Colors.white),
+                          decoration: InputDecoration(
+                            hintText: 'Ask a follow-up question...',
+                            hintStyle: TextStyle(color: Colors.grey),
+                            border: OutlineInputBorder(
+                              borderRadius: BorderRadius.circular(12),
+                            ),
+                            filled: true,
+                            fillColor: Colors.grey.shade800,
+                          ),
+                        ),
+                      ),
+                      SizedBox(width: 8),
+                      IconButton(
+                        icon: Icon(Icons.send, color: Colors.purple),
+                        onPressed: () {
+                          if (followupController.text.isNotEmpty) {
+                            _chatBloc.add(ChatGenerationNewTextMessageEvent(
+                              inputMessage: followupController.text,
+                            ));
+                            followupController.clear();
+                          }
+                        },
+                      ),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+        );
+      },
+    );
 
+    if (initialMessage != null) {
+      _chatBloc.add(ChatGenerationNewTextMessageEvent(
+        inputMessage: initialMessage,
+      ));
+    }
+  }
 
-(b) Write the simulateManyDays method. The method uses simulateOneDay to simulate
-numBirds birds or a bear coming to the feeder on at most numDays consecutive days. The
-simulation returns the number of days that birds or a bear found food at the feeder.
-Consider the following examples.
-Value of currentFood
-and Method Call
-currentFood: 2400
+  // Function to parse AI response and extract questions
+  void _parseAndReplaceQuestions(String aiResponse) {
+    try {
+      print('Full AI Response: $aiResponse');
+      print('=== PARSING DEBUG ===');
 
-Possible Outcomes and Resulting Return Value
+      List<String> lines = aiResponse.split('\n');
+      List<Map<String, dynamic>> newQuestions = [];
+      List<String> questionLines = [];
 
-Day 1: simulateOneDay leaves 2100 grams of food in the
-feeder.
-simulateManyDays(10, 4) Day 2: simulateOneDay leaves 1650 grams of food in the
-feeder.
-Day 3: simulateOneDay leaves 1500 grams of food in the
-feeder.
-Day 4: simulateOneDay leaves 1260 grams of food in the
-feeder.
-The simulation returns 4 because, on all four days of the simulation,
-birds or a bear found food at the feeder. The instance variable
-currentFood has the value 1260.
-Day 1: simulateOneDay leaves 150 grams of food in the feeder.
-Day 2: simulateOneDay leaves 0 grams of food in the feeder.
+      // First, collect all lines that look like questions
+      for (String line in lines) {
+        String trimmedLine = line.trim();
+        if (trimmedLine.startsWith('[') && trimmedLine.endsWith(']')) {
+          questionLines.add(trimmedLine);
+          print('Found question line: $trimmedLine');
+        }
+      }
 
-currentFood: 250
-simulateManyDays(10, 5)
+      print('Total question lines found: ${questionLines.length}');
 
-The simulation returns 2 because, on two of the five simulated days,
-birds or a bear found food at the feeder. The instance variable
-currentFood has the value 0.
-The simulation returns 0 because no food was found at the feeder on
-any day. The instance variable currentFood has the value 0.
+      // Now parse the collected question lines
+      for (String line in questionLines) {
+        Map<String, dynamic>? parsedQuestion = _parseBracketFormat(line);
+        if (parsedQuestion != null) {
+          newQuestions.add(parsedQuestion);
+          print('Successfully added question ${newQuestions.length}: ${parsedQuestion['question']}');
+        } else {
+          print('Failed to parse question line: $line');
+        }
+      }
 
-currentFood: 0
-simulateManyDays(5, 10)
+      print('Total questions parsed: ${newQuestions.length}');
 
+      // If we got fewer questions than requested, try to parse again with a different strategy
+      if (newQuestions.length < numberOfQuestions) {
+        print('Got fewer questions than requested, trying alternative parsing');
+        newQuestions.clear(); // Clear the previous attempts
 
+        // Try splitting by double newlines first
+        List<String> potentialQuestions = aiResponse.split('\n\n');
+        for (String block in potentialQuestions) {
+          Map<String, dynamic>? parsedQuestion =
+              _parseBracketFormat(block.trim());
+          if (parsedQuestion != null) {
+            newQuestions.add(parsedQuestion);
+            print('Alternative parsing added question: ${parsedQuestion['question']}');
+          }
+        }
 
-Complete the simulateManyDays method. Assume that simulateOneDay works as
-intended, regardless of what you wrote in part (a). You must use simulateOneDay appropriately in
-order to receive full credit.
-/**
-* Returns the number of days birds or a bear found food to eat at the feeder in this simulation,
-* as described in part (b)
-* Preconditions: numBirds > 0, numDays > 0
-*/
-public int simulateManyDays(int numBirds, int numDays)
+        // If still not enough, try splitting by single newlines
+        if (newQuestions.length < numberOfQuestions) {
+          for (String line in lines) {
+            Map<String, dynamic>? parsedQuestion =
+                _parseBracketFormat(line.trim());
+            if (parsedQuestion != null) {
+              newQuestions.add(parsedQuestion);
+              print('Single line parsing added question: ${parsedQuestion['question']}');
+            }
+          }
+        }
+      }
 
-Begin your response at the top of a new page in the separate Free Response booklet
-and fill in the appropriate circle at the top of each page to indicate the question number.
-If there are multiple parts to this question, write the part letter with your response.
-Class information for this question
-public class Feeder
-private int currentFood
-public void simulateOneDay(int numBirds)
-public int simulateManyDays(int numBirds, int numDays)
+      // If we successfully parsed questions, replace the current ones
+      if (newQuestions.isNotEmpty) {
+        // Ensure we don't exceed the requested number of questions
+        if (newQuestions.length > numberOfQuestions) {
+          newQuestions = newQuestions.sublist(0, numberOfQuestions);
+        }
 
------------------------------------------------------------------------------
+        print('Setting state with ${newQuestions.length} questions');
+        print('Before setState - showQuizArea: $showQuizArea, scienceQuestions.length: ${scienceQuestions.length}');
+        setState(() {
+          scienceQuestions = newQuestions;
+          answeredCorrectly = List.filled(newQuestions.length, false);
+          currentQuestionIndex = 0; // Reset to first question
+          showAnswer = false;
+          selectedAnswer = null;
+          isWaitingForQuestions = false;
+          showQuizArea = true; // Show quiz area after questions are generated
+          showScoreSummary = false;
+        });
 
-2. This question involves a scoreboard for a game. The game is played between two teams who alternate turns so
-that at any given time, one team is active and the other team is inactive. During a turn, a team makes one or
-more plays. Each play can score one or more points and the team’s turn continues, or the play can fail, in
-which case no points are scored and the team’s turn ends. The Scoreboard class, which you will write, is
-used to keep track of the score in a game.
-The Scoreboard class contains a constructor and two methods.
-• The constructor has two parameters. The first parameter is a String containing the
-name of team 1, and the second parameter is a String containing the name of team 2.
-The game always begins with team 1 as the active team.
-• The recordPlay method has a single nonnegative integer parameter that is equal to the
-number of points scored on a play or 0 if the play failed. If the play results in one or
-more points scored, the active team’s score is updated and that team remains active. If the
-value of the parameter is 0, the active team’s turn ends and the inactive team becomes the
-active team. The recordPlay method does not return a value.
-• The getScore method has no parameters. The method returns a String containing
-information about the current state of the game. The returned string begins with the score of
-team 1, followed by a hyphen ("-"), followed by the score of team 2, followed by a
-hyphen, followed by the name of the team that is currently active.
+        print('After setState - showQuizArea: $showQuizArea, scienceQuestions.length: ${scienceQuestions.length}');
+        print('First question: ${scienceQuestions.isNotEmpty ? scienceQuestions[0]['question'] : 'No questions'}');
 
+        // Clear chat history after successful question generation
+        _clearChatHistory();
 
+        // Show success message in console instead of UI
+        print('Successfully loaded ${newQuestions.length} new $selectedSubject questions!');
+      } else {
+        // If parsing failed, show error with more details
+        print('No questions were parsed successfully');
+        setState(() {
+          isWaitingForQuestions = false;
+        });
 
-The following table contains a sample code execution sequence and the corresponding results. The code
-execution sequence appears in a class other than Scoreboard.
-Statement
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text('Failed to parse questions. Please try again.'),
+            backgroundColor: Colors.red,
+            duration: Duration(seconds: 5),
+          ),
+        );
+      }
+    } catch (e) {
+      setState(() {
+        isWaitingForQuestions = false;
+      });
+      print('Exception in parsing: $e');
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error parsing questions: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
+  }
 
-Value Returned
-(blank if none)
+  Map<String, dynamic>? _parseBracketFormat(String line) {
+    try {
+      // Remove trailing comma if present
+      String cleanLine =
+          line.endsWith(',') ? line.substring(0, line.length - 1) : line;
 
-String info;
-Scoreboard game =
-new Scoreboard("Red", "Blue");
+      // Remove [ and ] brackets
+      if (!cleanLine.startsWith('[') || !cleanLine.endsWith(']')) {
+        return null;
+      }
 
-game is a new Scoreboard for
-a game played between team 1, whose
-name is "Red", and team 2, whose
-name is "Blue". The active team
-is set to team 1.
+      String content = cleanLine.substring(1, cleanLine.length - 1);
 
-info = game.getScore();
-game.recordPlay(1);
+      // Split by comma, but be careful with quoted strings
+      List<String> parts = [];
+      StringBuffer currentPart = StringBuffer();
+      bool inQuotes = false;
 
-"0-0-Red"
+      for (int i = 0; i < content.length; i++) {
+        String char = content[i];
 
-info = game.getScore();
-game.recordPlay(0);
+        if (char == '"') {
+          inQuotes = !inQuotes;
+          currentPart.write(char);
+        } else if (char == ',' && !inQuotes) {
+          parts.add(currentPart.toString().trim());
+          currentPart.clear();
+        } else {
+          currentPart.write(char);
+        }
+      }
 
-"1-0-Red"
+      // Add the last part
+      parts.add(currentPart.toString().trim());
 
-info = game.getScore();
-info = game.getScore();
+      // Clean each part (remove surrounding quotes if present)
+      for (int i = 0; i < parts.length; i++) {
+        if (parts[i].startsWith('"') && parts[i].endsWith('"')) {
+          parts[i] = parts[i].substring(1, parts[i].length - 1);
+        }
+      }
 
-"1-0-Blue"
-"1-0-Blue"
+      if (parts.length == 6) {
+        return {
+          "question": parts[0],
+          "options": [parts[1], parts[2], parts[3], parts[4]],
+          "answer": parts[5]
+        };
+      } else {
+        print('Expected 6 parts but got ${parts.length}');
+        return null;
+      }
+    } catch (e) {
+      print('Error parsing bracket format: $e');
+      return null;
+    }
+  }
 
-game.recordPlay(3);
-info = game.getScore();
-game.recordPlay(1);
-game.recordPlay(0);
-info = game.getScore();
-game.recordPlay(0);
+  void _generateQuestions() {
+    print('_generateQuestions called');
+    setState(() {
+      isWaitingForQuestions = true;
+      showQuizArea = false; // Reset quiz area visibility
+    });
 
-Explanation
+    print('Generating $numberOfQuestions questions for: $selectedSubject');
 
-Team 1 earns 1 point because the
-game always begins with team 1 as
-the active team.
-Team 1’s play failed, so team 2 is
-now active.
-The score and state of the game are
-unchanged since the last call to
-getScore.
-Team 2 earns 3 points.
+    // Clear any previous questions and answers
+    scienceQuestions.clear();
+    answeredCorrectly.clear();
 
-"1-3-Blue"
-Team 2 earns 1 point.
-Team 2’s play failed, so team 1 is
-now active.
-"1-4-Red"
-Team 1’s play failed, so team 2 is
-now active.
-Team 2 earns 4 points.
-Team 2’s play failed, so team 1 is
-now active.
+    String prompt = """
+Generate exactly $numberOfQuestions multiple choice questions for $selectedSubject.
+Format each question exactly like this: [question text, option A, option B, option C, option D, correct answer]
+Do not include any explanations or additional text, just the questions in this exact format.
+Example format:
+[What is the chemical symbol for water?, H2O, CO2, NaCl, O2, H2O]
+[What is the capital of France?, London, Berlin, Paris, Madrid, Paris]
 
-game.recordPlay(4);
-game.recordPlay(0);
+Generate exactly $numberOfQuestions questions for $selectedSubject:
+""";
 
-"1-8-Red"
-info = game.getScore();
-Scoreboard match =
-match is a new and independent
-Scoreboard object.
-new Scoreboard("Lions", "Tigers");
-"0-0-Lions"
-info = match.getScore();
-"1-8-Red"
-info = game.getScore();
-Write the complete Scoreboard class. Your implementation must meet all specifications and conform to
-the examples shown in the preceding table.
+    _chatBloc.add(ChatGenerationNewTextMessageEvent(inputMessage: prompt));
 
-Begin your response at the top of a new page in the separate Free Response booklet
-and fill in the appropriate circle at the top of each page to indicate the question number.
-If there are multiple parts to this question, write the part letter with your response.
+    print('Event added to ChatBloc');
+  }
 
------------------------------------------------------------------------------
+  void _restartQuiz() {
+    setState(() {
+      currentQuestionIndex = 0;
+      selectedAnswer = null;
+      showAnswer = false;
+      showScoreSummary = false;
+      showQuizArea = true;
+      answeredCorrectly = List.filled(scienceQuestions.length, false);
+    });
+  }
 
-3. This question involves the manipulation and analysis of a list of words. The following WordChecker
-class contains an ArrayList<String> to be analyzed and methods that are used to perform the
-analysis. You will write two methods of the WordChecker class.
-public class WordChecker
-{
-/** Initialized in the constructor and contains no null elements */
-private ArrayList<String> wordList;
-/**
-* Returns true if each element of wordList (except the first) contains the previous
-* element as a substring and returns false otherwise, as described in part (a)
-* Precondition: wordList contains at least two elements.
-* Postcondition: wordList is unchanged.
-*/
-public boolean isWordChain()
-{ /* to be implemented in part (a) */ }
-/**
-* Returns an ArrayList<String> based on strings from wordList that start
-* with target, as described in part (b). Each element of the returned ArrayList has had
-* the initial occurrence of target removed.
-* Postconditions: wordList is unchanged.
-*
-Items appear in the returned list in the same order as they appear in wordList.
-*/
-public ArrayList<String> createList(String target)
-{ /* to be implemented in part (b) */ }
-// There may be instance variables, constructors, and methods that are not shown.
+  void _returnToHome() {
+    Navigator.of(context).popUntil((route) => route.isFirst);
+  }
+
+  void _submitAnswer() {
+    if (selectedAnswer == null) return;
+
+    final isCorrect =
+        selectedAnswer == scienceQuestions[currentQuestionIndex]["answer"];
+    setState(() {
+      // Don't clear selectedAnswer - keep it to show wrong answer highlighting
+      showAnswer = true;
+      if (isCorrect) {
+        answeredCorrectly[currentQuestionIndex] = true;
+        _dbHelper.updateUserPoints(username, 50);
+      }
+    });
+  }
+
+  @override
+  Widget build(BuildContext context) {
+    print('HomePage build method called - showQuizArea: $showQuizArea, scienceQuestions.length: ${scienceQuestions.length}');
+    return BlocProvider.value(
+      value: _chatBloc,
+      child: Scaffold(
+        extendBodyBehindAppBar: true,
+        backgroundColor: Colors.transparent,
+        body: Stack(
+          children: [
+            const SpaceBackground(),
+            SafeArea(
+              child: BlocListener<ChatBloc, ChatState>(
+                listener: (context, state) {
+                  print('BlocListener triggered with state: ${state.runtimeType}');
+                  print('isWaitingForQuestions: $isWaitingForQuestions');
+                  if (state is ChatSuccessState) {
+                    print('ChatSuccessState received with ${state.messages.length} messages');
+                    if (isWaitingForQuestions && state.messages.isNotEmpty) {
+                      try {
+                        var lastMessage = state.messages.last;
+                        print('Last message role: ${lastMessage.role}');
+                        print('Last message parts length: ${lastMessage.parts.length}');
+                        if (lastMessage.role != "user" && lastMessage.parts.isNotEmpty) {
+                          print('Parsing AI response...');
+                          _parseAndReplaceQuestions(lastMessage.parts.first.text);
+                        } else {
+                          print('Skipping parsing - role: ${lastMessage.role}, parts empty: ${lastMessage.parts.isEmpty}');
+                        }
+                      } catch (e) {
+                        print('Error in BlocListener: $e');
+                        setState(() {
+                          isWaitingForQuestions = false;
+                        });
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Error processing AI response: $e'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
+                      }
+                    }
+                  } else if (state is ChatErrorState) {
+                    print('ChatErrorState received: ${state.message}');
+                    setState(() {
+                      isWaitingForQuestions = false;
+                    });
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Error: ${state.message}'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
+                  }
+                },
+                child: BlocBuilder<ChatBloc, ChatState>(
+                  builder: (context, state) {
+                    print('BlocBuilder rebuilding. showQuizArea: $showQuizArea, scienceQuestions.length: ${scienceQuestions.length}, showScoreSummary: $showScoreSummary');
+                    
+                    return Padding(
+                      padding: const EdgeInsets.symmetric(horizontal: 16.0),
+                      child: Column(
+                        children: [
+                          SizedBox(height: 20),
+                          Expanded(
+                            child: showScoreSummary
+                                ? _buildScoreSummary()
+                                : showQuizArea && scienceQuestions.isNotEmpty
+                                    ? _buildQuizArea()
+                                    : _buildHomeScreen(),
+                          ),
+                        ],
+                      ),
+                    );
+                  },
+                ),
+              ),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+
+  Widget _buildHomeScreen() {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFF1D1E33), Color(0xFF2A2B4A)],
+        ),
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(20),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.stretch,
+            children: [
+              const Text(
+                'Choose Your Subject',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              DropdownButtonFormField<String>(
+                value: selectedSubject,
+                decoration: InputDecoration(
+                  filled: true,
+                  fillColor: Colors.white.withOpacity(0.1),
+                  border: OutlineInputBorder(
+                    borderRadius: BorderRadius.circular(12),
+                    borderSide: BorderSide.none,
+                  ),
+                  contentPadding: const EdgeInsets.symmetric(
+                    horizontal: 16,
+                    vertical: 12,
+                  ),
+                ),
+                dropdownColor: const Color(0xFF2A2B4A),
+                style: const TextStyle(color: Colors.white),
+                items: subjects.map((String subject) {
+                  return DropdownMenuItem<String>(
+                    value: subject,
+                    child: Text(subject),
+                  );
+                }).toList(),
+                onChanged: (String? newValue) {
+                  if (newValue != null) {
+                    setState(() {
+                      selectedSubject = newValue;
+                    });
+                  }
+                },
+              ),
+              const SizedBox(height: 20),
+              const Text(
+                'Number of Questions',
+                style: TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 20),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  IconButton(
+                    onPressed: () {
+                      if (numberOfQuestions > 5) {
+                        setState(() {
+                          numberOfQuestions -= 5;
+                        });
+                      }
+                    },
+                    icon: const Icon(Icons.remove_circle, color: Colors.white),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                      horizontal: 20,
+                      vertical: 10,
+                    ),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withOpacity(0.1),
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    child: Text(
+                      '$numberOfQuestions',
+                      style: const TextStyle(
+                        fontSize: 24,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                      ),
+                    ),
+                  ),
+                  IconButton(
+                    onPressed: () {
+                      if (numberOfQuestions < 30) {
+                        setState(() {
+                          numberOfQuestions += 5;
+                        });
+                      }
+                    },
+                    icon: const Icon(Icons.add_circle, color: Colors.white),
+                  ),
+                ],
+              ),
+              const Spacer(),
+              Container(
+                width: double.infinity,
+                height: 60,
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [
+                      Color(0xFF4facfe),
+                      Color(0xFF00f2fe)
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(30),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF4facfe).withOpacity(0.3),
+                      blurRadius: 20,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
+                ),
+                child: ElevatedButton(
+                  onPressed: isWaitingForQuestions ? null : () {
+                    _generateQuestions();
+                  },
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.transparent,
+                    shadowColor: Colors.transparent,
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(30),
+                    ),
+                  ),
+                  child: isWaitingForQuestions
+                      ? Row(
+                          mainAxisAlignment: MainAxisAlignment.center,
+                          children: [
+                            SizedBox(
+                              width: 20,
+                              height: 20,
+                              child: CircularProgressIndicator(
+                                strokeWidth: 2,
+                                valueColor: AlwaysStoppedAnimation<Color>(Colors.white),
+                              ),
+                            ),
+                            const SizedBox(width: 12),
+                            const Text(
+                              'Generating Questions...',
+                              style: TextStyle(
+                                fontSize: 18,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        )
+                      : const Text(
+                          'Start Learning',
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildQuizArea() {
+    print('_buildQuizArea called with ${scienceQuestions.length} questions, current index: $currentQuestionIndex');
+    if (scienceQuestions.isEmpty) {
+      print('No questions available!');
+      return Center(
+        child: Text(
+          'No questions available',
+          style: TextStyle(color: Colors.white, fontSize: 18),
+        ),
+      );
+    }
+    
+    if (currentQuestionIndex >= scienceQuestions.length) {
+      print('Current index out of bounds!');
+      return Center(
+        child: Text(
+          'Question index out of bounds',
+          style: TextStyle(color: Colors.white, fontSize: 18),
+        ),
+      );
+    }
+    
+    final currentQuestion = scienceQuestions[currentQuestionIndex];
+    print('Current question: ${currentQuestion['question']}');
+    print('Current options: ${currentQuestion['options']}');
+    
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // Header with progress
+        Row(
+          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+          children: [
+            IconButton(
+              icon: const Icon(Icons.arrow_back, color: Colors.white),
+              onPressed: _returnToHome,
+            ),
+            Container(
+              padding: const EdgeInsets.symmetric(
+                horizontal: 16,
+                vertical: 8,
+              ),
+              decoration: BoxDecoration(
+                color: Colors.blueAccent.withOpacity(0.2),
+                borderRadius: BorderRadius.circular(20),
+              ),
+              child: Text(
+                'Question ${currentQuestionIndex + 1}/${scienceQuestions.length}',
+                style: const TextStyle(
+                  color: Colors.white,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 16),
+
+        // Progress bar
+        ClipRRect(
+          borderRadius: BorderRadius.circular(10),
+          child: LinearProgressIndicator(
+            value: (currentQuestionIndex + 1) / scienceQuestions.length,
+            backgroundColor: Colors.white24,
+            valueColor: const AlwaysStoppedAnimation<Color>(Colors.blueAccent),
+            minHeight: 8,
+          ),
+        ),
+        const SizedBox(height: 16),
+
+        // Question
+        Container(
+          padding: const EdgeInsets.all(20),
+          decoration: BoxDecoration(
+            color: Colors.white.withOpacity(0.05),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(
+              color: Colors.white.withOpacity(0.1),
+              width: 1,
+            ),
+          ),
+          child: Column(
+            children: [
+              Text(
+                currentQuestion["question"]!,
+                style: const TextStyle(
+                  fontSize: 24,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  height: 1.4,
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 16),
+              ElevatedButton.icon(
+                onPressed: () {
+                  String question = currentQuestion["question"]!;
+                  String prompt =
+                      "Please explain how to solve this question: '$question'. Provide a detailed step-by-step explanation with the fundamental concepts involved.";
+                  _showChatModal(initialMessage: prompt);
+                },
+                icon: const Icon(Icons.help_outline, color: Colors.white),
+                label: const Text("Ask AI for Help"),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.purple.withOpacity(0.2),
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+
+        // Answer options
+        Flexible(
+          child: ListView.builder(
+            itemCount: currentQuestion["options"].length,
+            itemBuilder: (context, index) {
+              final option = currentQuestion["options"][index];
+              final isSelected = selectedAnswer == option;
+              final isCorrect = showAnswer && option == currentQuestion["answer"];
+              final isWrong = showAnswer && isSelected && !isCorrect;
+
+              return Padding(
+                padding: const EdgeInsets.only(bottom: 8),
+                child: AnimatedContainer(
+                  duration: const Duration(milliseconds: 200),
+                  height: 48,
+                  decoration: BoxDecoration(
+                    color: isCorrect
+                        ? Colors.green.withOpacity(0.2)
+                        : isWrong
+                            ? Colors.red.withOpacity(0.2)
+                            : isSelected
+                                ? Colors.blueAccent.withOpacity(0.15)
+                                : Colors.white.withOpacity(0.04),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: isCorrect
+                          ? Colors.green
+                          : isWrong
+                              ? Colors.red
+                              : isSelected
+                                  ? Colors.blueAccent
+                                  : Colors.white.withOpacity(0.08),
+                      width: 2,
+                    ),
+                  ),
+                  child: ListTile(
+                    dense: true,
+                    minVerticalPadding: 0,
+                    contentPadding: const EdgeInsets.symmetric(
+                      horizontal: 12,
+                      vertical: 0,
+                    ),
+                    title: Text(
+                      option,
+                      style: TextStyle(
+                        fontSize: 15,
+                        color: Colors.white,
+                        fontWeight:
+                            isSelected ? FontWeight.bold : FontWeight.normal,
+                      ),
+                      maxLines: 2,
+                      overflow: TextOverflow.ellipsis,
+                    ),
+                    trailing: showAnswer
+                        ? Icon(
+                            isCorrect
+                                ? Icons.check_circle
+                                : isWrong
+                                    ? Icons.cancel
+                                    : null,
+                            color: isCorrect ? Colors.green : isWrong ? Colors.red : null,
+                          )
+                        : null,
+                    onTap: showAnswer
+                        ? null
+                        : () {
+                            setState(() {
+                              selectedAnswer = option;
+                            });
+                          },
+                  ),
+                ),
+              );
+            },
+          ),
+        ),
+
+        // Navigation Buttons
+        if (!showAnswer && selectedAnswer != null)
+          Padding(
+            padding: const EdgeInsets.only(top: 24),
+            child: Container(
+              width: double.infinity,
+              height: 60,
+              decoration: BoxDecoration(
+                gradient: const LinearGradient(
+                  colors: [
+                    Color(0xFF667eea),
+                    Color(0xFF764ba2)
+                  ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(30),
+                boxShadow: [
+                  BoxShadow(
+                    color: const Color(0xFF667eea).withOpacity(0.3),
+                    blurRadius: 20,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
+              ),
+              child: ElevatedButton(
+                onPressed: _submitAnswer,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.transparent,
+                  shadowColor: Colors.transparent,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                ),
+                child: const Text(
+                  'Submit Answer',
+                  style: TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+          )
+        else if (showAnswer)
+          Padding(
+            padding: const EdgeInsets.only(top: 24),
+            child: Container(
+              width: double.infinity,
+              height: 60,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: currentQuestionIndex + 1 == scienceQuestions.length
+                      ? [
+                          Color(0xFF56ab2f),
+                          Color(0xFFa8e6cf)
+                        ]
+                      : [
+                          Color(0xFF4facfe),
+                          Color(0xFF00f2fe)
+                        ],
+                  begin: Alignment.topLeft,
+                  end: Alignment.bottomRight,
+                ),
+                borderRadius: BorderRadius.circular(30),
+                boxShadow: [
+                  BoxShadow(
+                    color: (currentQuestionIndex + 1 == scienceQuestions.length
+                        ? const Color(0xFF56ab2f)
+                        : const Color(0xFF4facfe))
+                        .withOpacity(0.3),
+                    blurRadius: 20,
+                    offset: const Offset(0, 10),
+                  ),
+                ],
+              ),
+              child: ElevatedButton(
+                onPressed: goToNextQuestion,
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: Colors.transparent,
+                  shadowColor: Colors.transparent,
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(30),
+                  ),
+                ),
+                child: Text(
+                  currentQuestionIndex + 1 == scienceQuestions.length
+                      ? 'Finish Quiz'
+                      : 'Next Question',
+                  style: const TextStyle(
+                    fontSize: 18,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
+                ),
+              ),
+            ),
+          ),
+      ],
+    );
+  }
+
+  Widget _buildScoreSummary() {
+    int correctAnswers = answeredCorrectly.where((correct) => correct).length;
+    double accuracy = (correctAnswers / scienceQuestions.length) * 100;
+
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+          colors: [Color(0xFF1D1E33), Color(0xFF2A2B4A)],
+        ),
+      ),
+      child: SafeArea(
+        child: Padding(
+          padding: const EdgeInsets.all(24),
+          child: Column(
+            children: [
+              const SizedBox(height: 40),
+              // Trophy Icon with Animation
+              Container(
+                padding: const EdgeInsets.all(20),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [Color(0xFFFFD700), Color(0xFFFFA500)],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  shape: BoxShape.circle,
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFFFFD700).withOpacity(0.3),
+                      blurRadius: 30,
+                      offset: const Offset(0, 10),
+                    ),
+                  ],
+                ),
+                child: const Icon(
+                  Icons.emoji_events,
+                  size: 60,
+                  color: Colors.white,
+                ),
+              ),
+              const SizedBox(height: 30),
+              
+              // Quiz Completed Text
+              const Text(
+                "Quiz Completed!",
+                style: TextStyle(
+                  fontSize: 32,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                  letterSpacing: 1.2,
+                ),
+              ),
+              const SizedBox(height: 40),
+              
+              // Score Card
+              Container(
+                padding: const EdgeInsets.all(30),
+                decoration: BoxDecoration(
+                  gradient: const LinearGradient(
+                    colors: [
+                      Color(0xFF667eea),
+                      Color(0xFF764ba2)
+                    ],
+                    begin: Alignment.topLeft,
+                    end: Alignment.bottomRight,
+                  ),
+                  borderRadius: BorderRadius.circular(24),
+                  boxShadow: [
+                    BoxShadow(
+                      color: const Color(0xFF667eea).withOpacity(0.3),
+                      blurRadius: 30,
+                      offset: const Offset(0, 15),
+                    ),
+                  ],
+                ),
+                child: Column(
+                  children: [
+                    const Text(
+                      "Your Score",
+                      style: TextStyle(
+                        fontSize: 20,
+                        color: Colors.white70,
+                        fontWeight: FontWeight.w500,
+                      ),
+                    ),
+                    const SizedBox(height: 15),
+                    Text(
+                      "$correctAnswers / ${scienceQuestions.length}",
+                      style: const TextStyle(
+                        fontSize: 48,
+                        fontWeight: FontWeight.bold,
+                        color: Colors.white,
+                        letterSpacing: 2,
+                      ),
+                    ),
+                    const SizedBox(height: 20),
+                    Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withOpacity(0.2),
+                        borderRadius: BorderRadius.circular(20),
+                      ),
+                      child: Text(
+                        "Accuracy: ${accuracy.toStringAsFixed(1)}%",
+                        style: TextStyle(
+                          fontSize: 18,
+                          fontWeight: FontWeight.bold,
+                          color: accuracy > 70
+                              ? const Color(0xFF4CAF50)
+                              : accuracy > 40
+                                  ? const Color(0xFFFF9800)
+                                  : const Color(0xFFF44336),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 40),
+              
+              // Action Buttons
+              Row(
+                children: [
+                  Expanded(
+                    child: Container(
+                      height: 45,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [
+                            Color(0xFF4facfe),
+                            Color(0xFF00f2fe)
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(22.5),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF4facfe).withOpacity(0.3),
+                            blurRadius: 20,
+                            offset: const Offset(0, 10),
+                          ),
+                        ],
+                      ),
+                      child: ElevatedButton(
+                        onPressed: _restartQuiz,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          shadowColor: Colors.transparent,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(22.5),
+                          ),
+                        ),
+                        child: const Text(
+                          "Retry Quiz",
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 16),
+                  Expanded(
+                    child: Container(
+                      height: 45,
+                      decoration: BoxDecoration(
+                        gradient: const LinearGradient(
+                          colors: [
+                            Color(0xFF667eea),
+                            Color(0xFF764ba2)
+                          ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(22.5),
+                        boxShadow: [
+                          BoxShadow(
+                            color: const Color(0xFF667eea).withOpacity(0.3),
+                            blurRadius: 20,
+                            offset: const Offset(0, 10),
+                          ),
+                        ],
+                      ),
+                      child: ElevatedButton(
+                        onPressed: _returnToHome,
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: Colors.transparent,
+                          shadowColor: Colors.transparent,
+                          shape: RoundedRectangleBorder(
+                            borderRadius: BorderRadius.circular(22.5),
+                          ),
+                        ),
+                        child: const Text(
+                          "Return Home",
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildChatMessages(
+      List<ChatMessageModel> messages, ScrollController scrollController) {
+    return Scrollbar(
+      controller: scrollController,
+      thumbVisibility: true,
+      thickness: 6,
+      radius: Radius.circular(10),
+      child: ListView.builder(
+        controller: scrollController,
+        padding: EdgeInsets.all(16),
+        itemCount: messages.length,
+        itemBuilder: (context, index) {
+          final message = messages[index];
+          bool isUser = message.role == "user";
+
+          return Padding(
+            padding: const EdgeInsets.symmetric(vertical: 8.0),
+            child: Row(
+              mainAxisAlignment:
+                  isUser ? MainAxisAlignment.end : MainAxisAlignment.start,
+              children: [
+                Container(
+                  padding: EdgeInsets.all(12),
+                  decoration: BoxDecoration(
+                    color: isUser ? Colors.blue : Colors.purple,
+                    borderRadius: BorderRadius.circular(12),
+                  ),
+                  constraints: BoxConstraints(
+                      maxWidth: MediaQuery.of(context).size.width * 0.75),
+                  child: Text(
+                    message.parts.isNotEmpty ? message.parts.first.text : 'No message content',
+                    style: TextStyle(color: Colors.white),
+                  ),
+                ),
+              ],
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  void _showSubjectSelectionModal() {
+    showDialog(
+      context: context,
+      builder: (context) => AlertDialog(
+        title: Text('Select a Subject'),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              _buildSubjectButton('Science'),
+              _buildSubjectButton('Mathematics'),
+              _buildSubjectButton('History'),
+              _buildSubjectButton('Geography'),
+              _buildSubjectButton('English'),
+              _buildSubjectButton('Computer Science'),
+              _buildSubjectButton('Physics'),
+              _buildSubjectButton('Chemistry'),
+              _buildSubjectButton('Biology'),
+              _buildSubjectButton('Economics'),
+              _buildSubjectButton('Psychology'),
+              _buildSubjectButton('Literature'),
+              _buildSubjectButton('Art'),
+              _buildSubjectButton('Music'),
+              _buildSubjectButton('Philosophy'),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildSubjectButton(String subject) {
+    return ElevatedButton(
+      onPressed: () {
+        setState(() {
+          selectedSubject = subject;
+        });
+        Navigator.of(context).pop();
+      },
+      child: Text(subject),
+    );
+  }
 }
 
+class SpaceBackground extends StatelessWidget {
+  const SpaceBackground({super.key});
 
-
-(a) Write the isWordChain method, which determines whether each element of wordList (except
-the first) contains the previous element as a substring. The following table shows two sample
-isWordChain method calls.
-wordList
-
-isWordChain
-Return Value
-
-["an", "band", "band",
-"abandon"]
-["to", "too", "stool",
-"tools"]
-
-true
-false
-
-Explanation
-Each element contains the previous
-element as a substring.
-"tools" does not contain
-the substring "stool".
-
-Complete the isWordChain method.
-/**
-* Returns true if each element of wordList (except the first) contains the previous
-* element as a substring and returns false otherwise, as described in part (a)
-* Precondition: wordList contains at least two elements.
-* Postcondition: wordList is unchanged.
-*/
-public boolean isWordChain()
-
-Begin your response at the top of a new page in the separate Free Response booklet
-and fill in the appropriate circle at the top of each page to indicate the question number.
-If there are multiple parts to this question, write the part letter with your response.
-
-(b) Write the createList method, which creates and returns an ArrayList<String>. The
-method identifies strings in wordList that start with target and returns a new ArrayList
-containing each identified string without the starting occurrence of target. Elements must appear in
-the returned list in the same order as they appear in wordList.
-Consider an example where wordList contains the following strings.
-["catch", "bobcat", "catchacat", "cat", "at"]
-The following table shows the ArrayList returned by some calls to createList. In all cases,
-wordList is unchanged.
-Method Call
-
-ArrayList
-Explanation
-Returned by
-createList
-createList("cat")
-["ch", "chacat", ""] Only "catch", "catchacat", and
-"cat" begin with "cat".
-"
-"
-""
-"
-"
-createList( catch ) [ , acat ]
-Only "catch" and "catchacat" begin
-with "catch".
-createList("dog")
-[]
-None of the words in wordList begin with
-"dog".
-Complete the createList method.
-/**
-* Returns an ArrayList<String> based on strings from wordList that start
-* with target, as described in part (b). Each element of the returned ArrayList has had
-* the initial occurrence of target removed.
-* Postconditions: wordList is unchanged.
-*
-Items appear in the returned list in the same order as they appear in wordList.
-*/
-public ArrayList<String> createList(String target)
-
-Begin your response at the top of a new page in the separate Free Response booklet
-and fill in the appropriate circle at the top of each page to indicate the question number.
-If there are multiple parts to this question, write the part letter with your response.
-Class information for this question
-public class WordChecker
-private ArrayList<String> wordList
-public boolean isWordChain()
-public ArrayList<String> createList(String target)
-
-
------------------------------------------------------------------------------
-
-4. This question involves a path through a two-dimensional (2D) array of integers, where the path is based on the
-values of elements in the array. When an element of the 2D array is accessed, the first index is used to specify
-the row and the second index is used to specify the column. The following Location class represents a
-row and column position in the 2D array.
-public class Location
-{
-private int theRow;
-private int theCol;
-public Location(int r, int c)
-{
-theRow = r;
-theCol = c;
+  @override
+  Widget build(BuildContext context) {
+    return Container(
+      decoration: const BoxDecoration(
+        gradient: LinearGradient(
+          colors: [Color(0xFF0A0E21), Color(0xFF1D1E33)],
+          begin: Alignment.topLeft,
+          end: Alignment.bottomRight,
+        ),
+      ),
+      child: Stack(
+        children: [
+          // Twinkling stars
+          for (int i = 0; i < 50; i++)
+            Positioned(
+              left: Random().nextDouble() * MediaQuery.of(context).size.width,
+              top: Random().nextDouble() * MediaQuery.of(context).size.height,
+              child: AnimatedContainer(
+                duration: Duration(seconds: Random().nextInt(3) + 1),
+                width: 2,
+                height: 2,
+                decoration: const BoxDecoration(
+                  color: Colors.white,
+                  shape: BoxShape.circle,
+                ),
+                onEnd: () {
+                  // Restart animation
+                },
+              ),
+            ),
+        ],
+      ),
+    );
+  }
 }
-public int getRow()
-{ return theRow; }
-public int getCol()
-{ return theCol; }
-}
-
-
-
-The following GridPath class contains the 2D array and methods to use to determine a path through the
-array. You will write two methods of the GridPath class.
-public class GridPath
-{
-/** Initialized in the constructor with distinct values that never change */
-private int[][] grid;
-/**
-* Returns the Location representing a neighbor of the grid element at row and col,
-* as described in part (a)
-* Preconditions: row is a valid row index and col is a valid column index in grid.
-*
-row and col do not specify the element in the last row and last column of grid.
-*/
-public Location getNextLoc(int row, int col)
-{ /* to be implemented in part (a) */ }
-/**
-* Computes and returns the sum of all values on a path through grid, as described in
-* part (b)
-* Preconditions: row is a valid row index and col is a valid column index in grid.
-*
-row and col do not specify the element in the last row and last column of grid.
-*/
-public int sumPath(int row, int col)
-{ /* to be implemented in part (b) */ }
-// There may be instance variables, constructors, and methods that are not shown.
-}
-
-
-
-
-
-
-(a) Write the getNextLoc method, which returns a Location object that represents the smaller of
-two neighbors of the grid element at row and col, according to the following rules.
-• The two neighbors that are considered are the element below the given element and the
-element to the right of the given element, if they exist.
-• If both neighbors exist, the Location of the neighbor with the smaller value is
-returned. Two neighbors will always have different values.
-• If only one neighbor exists, the Location of the existing neighbor is returned.
-For example, assume that grid contains the following values.
-
-The following table shows some sample calls to getNextLoc.
-Method Call
-Explanation
-getNextLoc(0, 0) Returns the neighbor to the right (the
-Location representing the element at row 0
-and column 1), since 3 < 11
-getNextLoc(1, 3) Returns the neighbor below (the Location
-representing the element at row 2 and
-column 3), since 15 < 16
-getNextLoc(2, 4) Returns the neighbor below (the Location
-representing the element at row 3 and
-column 4), since the given element has no
-neighbor to the right
-getNextLoc(4, 3) Returns the neighbor to the right (the
-Location representing the element at row 4
-and column 4), since the given element has no
-neighbor below
-In the example, the getNextLoc method will never be called with row 4 and column 4, as
-those values would violate the precondition of the method.
-
-
-
-
-
-
-Complete the getNextLoc method.
-/**
-* Returns the Location representing a neighbor of the grid element at row and col,
-* as described in part (a)
-* Preconditions: row is a valid row index and col is a valid column index in grid.
-*
-row and col do not specify the element in the last row and last column of grid.
-*/
-public Location getNextLoc(int row, int col)
-
-Begin your response at the top of a new page in the separate Free Response booklet
-and fill in the appropriate circle at the top of each page to indicate the question number.
-If there are multiple parts to this question, write the part letter with your response.
-Class information for this question
-public class Location
-private int theRow
-private int theCol
-public Location(int r, int c)
-public int getRow()
-public int getCol()
-public class GridPath
-private int[][] grid
-public Location getNextLoc(int row, int col)
-public int sumPath(int row, int col)
-
-
-
-
-
-(b) Write the sumPath method, which returns the sum of all values on a path in grid. The path
-begins with the element at row and col and is determined by successive calls to getNextLoc.
-The path ends when the element in the last row and the last column of grid is reached.
-For example, consider the following contents of grid. The shaded elements of grid represent the
-values on the path that results from the method call sumPath(1, 1). The method call returns 19
-because 3 1 2 1 9 1 4 1 0 1 1 5 19.
-
-
-
-
-
-
-
-Write the sumPath method. Assume getNextLoc works as intended, regardless of what you
-wrote in part (a). You must use getNextLoc appropriately in order to receive full credit.
-/**
-* Computes and returns the sum of all values on a path through grid, as described in
-* part (b)
-* Preconditions: row is a valid row index and col is a valid column index in grid.
-*
-row and col do not specify the element in the last row and last column of grid.
-*/
-public int sumPath(int row, int col)
-
-Begin your response at the top of a new page in the separate Free Response booklet
-and fill in the appropriate circle at the top of each page to indicate the question number.
-If there are multiple parts to this question, write the part letter with your response.
-Class information for this question
-public class Location
-private int theRow
-private int theCol
-public Location(int r, int c)
-public int getRow()
-public int getCol()
-public class GridPath
-private int[][] grid
-public Location getNextLoc(int row, int col)
-public int sumPath(int row, int col)
-
------------------------------------------------------------------------------
-
