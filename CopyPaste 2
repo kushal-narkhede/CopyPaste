@@ -4222,6 +4222,7 @@ class _PracticeModeScreenState extends State<PracticeModeScreen> {
   }
 
   Widget _buildQuizContent() {
+    final int totalQuestions = _questions.length < _questionCount ? _questions.length : _questionCount;
     return Column(
       mainAxisAlignment: MainAxisAlignment.center,
       crossAxisAlignment: CrossAxisAlignment.stretch,
@@ -4422,15 +4423,11 @@ class _PracticeModeScreenState extends State<PracticeModeScreen> {
                     child: ElevatedButton.icon(
                       onPressed: _continueToNext,
                       icon: Icon(
-                        _currentQuestionIndex < _questionCount - 1
-                            ? Icons.arrow_forward
-                            : Icons.check_circle,
+                        _currentQuestionIndex < totalQuestions - 1 ? Icons.arrow_forward : Icons.check_circle,
                         color: Colors.white,
                       ),
                       label: Text(
-                        _currentQuestionIndex < _questionCount - 1
-                            ? 'Next Question'
-                            : 'Finish',
+                        _currentQuestionIndex < totalQuestions - 1 ? 'Next Question' : 'Finish',
                         style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
