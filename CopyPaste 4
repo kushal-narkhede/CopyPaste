@@ -414,18 +414,19 @@ class _HomePageState extends State<HomePage> {
 
   void _generateQuestions() {
     print('_generateQuestions called');
-    setState(() {
-      isWaitingForQuestions = true;
-      showQuizArea = false; // Reset quiz area visibility
-    });
+    try {
+      setState(() {
+        isWaitingForQuestions = true;
+        showQuizArea = false; // Reset quiz area visibility
+      });
 
-    print('Generating $numberOfQuestions questions for: $selectedSubject');
+      print('Generating $numberOfQuestions questions for: $selectedSubject');
 
-    // Clear any previous questions and answers
-    scienceQuestions.clear();
-    answeredCorrectly.clear();
+      // Clear any previous questions and answers
+      scienceQuestions.clear();
+      answeredCorrectly.clear();
 
-    String prompt = """
+      String prompt = """
 Generate exactly $numberOfQuestions multiple choice questions for $selectedSubject.
 Format each question exactly like this: [question text, option A, option B, option C, option D, correct answer]
 Do not include any explanations or additional text, just the questions in this exact format.
@@ -436,9 +437,21 @@ Example format:
 Generate exactly $numberOfQuestions questions for $selectedSubject:
 """;
 
-    _chatBloc.add(ChatGenerationNewTextMessageEvent(inputMessage: prompt));
+      _chatBloc.add(ChatGenerationNewTextMessageEvent(inputMessage: prompt));
 
-    print('Event added to ChatBloc');
+      print('Event added to ChatBloc');
+    } catch (e) {
+      print('Error in _generateQuestions: $e');
+      setState(() {
+        isWaitingForQuestions = false;
+      });
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text('Error generating questions: $e'),
+          backgroundColor: Colors.red,
+        ),
+      );
+    }
   }
 
   void _restartQuiz() {
@@ -496,13 +509,40 @@ Generate exactly $numberOfQuestions questions for $selectedSubject:
                   if (state is ChatSuccessState) {
                     print('ChatSuccessState received with ${state.messages.length} messages');
                     if (isWaitingForQuestions && state.messages.isNotEmpty) {
-                      var lastMessage = state.messages.last;
-                      print('Last message role: ${lastMessage.role}');
-                      if (lastMessage.role != "user" && lastMessage.parts.isNotEmpty) {
-                        print('Parsing AI response...');
-                        _parseAndReplaceQuestions(lastMessage.parts.first.text);
+                      try {
+                        var lastMessage = state.messages.last;
+                        print('Last message role: ${lastMessage.role}');
+                        print('Last message parts length: ${lastMessage.parts.length}');
+                        if (lastMessage.role != "user" && lastMessage.parts.isNotEmpty) {
+                          print('Parsing AI response...');
+                          _parseAndReplaceQuestions(lastMessage.parts.first.text);
+                        } else {
+                          print('Skipping parsing - role: ${lastMessage.role}, parts empty: ${lastMessage.parts.isEmpty}');
+                        }
+                      } catch (e) {
+                        print('Error in BlocListener: $e');
+                        setState(() {
+                          isWaitingForQuestions = false;
+                        });
+                        ScaffoldMessenger.of(context).showSnackBar(
+                          SnackBar(
+                            content: Text('Error processing AI response: $e'),
+                            backgroundColor: Colors.red,
+                          ),
+                        );
                       }
                     }
+                  } else if (state is ChatErrorState) {
+                    print('ChatErrorState received: ${state.message}');
+                    setState(() {
+                      isWaitingForQuestions = false;
+                    });
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text('Error: ${state.message}'),
+                        backgroundColor: Colors.red,
+                      ),
+                    );
                   }
                 },
                 child: BlocBuilder<ChatBloc, ChatState>(
