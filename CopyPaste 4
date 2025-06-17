@@ -413,45 +413,8 @@ class _HomePageState extends State<HomePage> {
   }
 
   void _generateQuestions() {
-    print('_generateQuestions called');
-    try {
-      setState(() {
-        isWaitingForQuestions = true;
-        showQuizArea = false; // Reset quiz area visibility
-      });
-
-      print('Generating $numberOfQuestions questions for: $selectedSubject');
-
-      // Clear any previous questions and answers
-      scienceQuestions.clear();
-      answeredCorrectly.clear();
-
-      String prompt = """
-Generate exactly $numberOfQuestions multiple choice questions for $selectedSubject.
-Format each question exactly like this: [question text, option A, option B, option C, option D, correct answer]
-Do not include any explanations or additional text, just the questions in this exact format.
-Example format:
-[What is the chemical symbol for water?, H2O, CO2, NaCl, O2, H2O]
-[What is the capital of France?, London, Berlin, Paris, Madrid, Paris]
-
-Generate exactly $numberOfQuestions questions for $selectedSubject:
-""";
-
-      _chatBloc.add(ChatGenerationNewTextMessageEvent(inputMessage: prompt));
-
-      print('Event added to ChatBloc');
-    } catch (e) {
-      print('Error in _generateQuestions: $e');
-      setState(() {
-        isWaitingForQuestions = false;
-      });
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('Error generating questions: $e'),
-          backgroundColor: Colors.red,
-        ),
-      );
-    }
+    // Do nothing when Start Learning is pressed
+    print('Start Learning pressed - no action taken');
   }
 
   void _restartQuiz() {
