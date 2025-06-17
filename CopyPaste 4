@@ -646,18 +646,7 @@ Generate exactly $numberOfQuestions questions for $selectedSubject:
               const Spacer(),
               ElevatedButton(
                 onPressed: () {
-                  Navigator.push(
-                    context,
-                    MaterialPageRoute(
-                      builder: (context) => MCQManager(
-                        username: widget.username,
-                        studySet: {},
-                        currentTheme: 'default',
-                        selectedSubject: selectedSubject,
-                        questionCount: numberOfQuestions,
-                      ),
-                    ),
-                  );
+                  _generateQuestions();
                 },
                 style: ElevatedButton.styleFrom(
                   backgroundColor: Colors.blue[600],
