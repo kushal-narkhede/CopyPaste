@@ -1898,15 +1898,8 @@ class _LearnTabState extends State<LearnTab>
             const SizedBox(height: 20),
             ElevatedButton.icon(
               onPressed: () {
-                Navigator.push(
-                  this.context,
-                  MaterialPageRoute(
-                    builder: (context) => PremadeSetsScreen(
-                      username: widget.username,
-                      onSetImported: _loadStudySets,
-                    ),
-                  ),
-                );
+                // Switch to Browse tab instead of navigating to PremadeSetsScreen
+                _tabController.animateTo(1); // Browse tab is at index 1
               },
               icon: const Icon(Icons.download),
               label: const Text('Browse Premade Sets'),
