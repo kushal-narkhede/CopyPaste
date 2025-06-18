@@ -3304,6 +3304,9 @@ class _MCQManagerState extends State<MCQManager> {
         color: Colors.transparent,
         child: InkWell(
           onTap: () async {
+            // Add haptic feedback
+            HapticFeedback.lightImpact();
+            
             // Import the course for all courses without showing choice screen
             await _importMCQSet(apClass['name']);
             // The choice screen will only appear when practicing from MySets
@@ -3359,7 +3362,6 @@ class _MCQManagerState extends State<MCQManager> {
                     overflow: TextOverflow.ellipsis,
                   ),
                   const SizedBox(height: 8),
-                  const SizedBox(height: 16),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
                     decoration: BoxDecoration(
@@ -3376,43 +3378,6 @@ class _MCQManagerState extends State<MCQManager> {
                         color: Colors.white,
                       ),
                     ),
-                  ),
-                  const SizedBox(height: 8),
-                  const SizedBox(height: 16),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                    children: [
-                      Container(
-                        padding:
-                            const EdgeInsets.symmetric(horizontal: 12, vertical: 4),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
-                          borderRadius: BorderRadius.circular(12),
-                        ),
-                        child: Text(
-                          apClass['name'] == 'AP Computer Science A' 
-                              ? '20 MCQs + 4 FRQs'
-                              : '20 Questions',
-                          style: const TextStyle(
-                            fontSize: 10,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                      Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: Colors.white.withOpacity(0.2),
-                          shape: BoxShape.circle,
-                        ),
-                        child: const Icon(
-                          Icons.download,
-                          color: Colors.white,
-                          size: 16,
-                        ),
-                      ),
-                    ],
                   ),
                 ],
               ),
