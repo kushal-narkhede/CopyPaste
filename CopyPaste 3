@@ -3303,13 +3303,9 @@ class _MCQManagerState extends State<MCQManager> {
         color: Colors.transparent,
         child: InkWell(
           onTap: () async {
-            // First import the course for all courses
+            // Import the course for all courses without showing choice screen
             await _importMCQSet(apClass['name']);
-            // Then show choice screen for all courses
-            setState(() {
-              selectedSubject = apClass['name'];
-              showAPCSChoice = true;
-            });
+            // The choice screen will only appear when practicing from MySets
           },
           borderRadius: BorderRadius.circular(20),
           child: Container(
