@@ -399,7 +399,11 @@ class _StudySetEditScreenState extends State<StudySetEditScreen> {
                                   ),
                                   child: Container(
                                     decoration: BoxDecoration(
-                                      color: Colors.white.withOpacity(0.1),
+                                      gradient: const LinearGradient(
+                                        colors: [Color(0xFF23243a), Color(0xFF16213E)],
+                                        begin: Alignment.topLeft,
+                                        end: Alignment.bottomRight,
+                                      ),
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                     padding: const EdgeInsets.all(16),
@@ -528,7 +532,15 @@ class _QuestionEditDialogState extends State<QuestionEditDialog> {
       _questionController.text = widget.question!['question_text'] ?? widget.question!['question'] ?? '';
       _correctAnswerController.text = widget.question!['correct_answer'] ?? '';
       
-      final options = widget.question!['options'] ?? [];
+      var optionsRaw = widget.question!['options'] ?? [];
+      List<String> options;
+      if (optionsRaw is String) {
+        options = optionsRaw.split('|');
+      } else if (optionsRaw is List) {
+        options = List<String>.from(optionsRaw);
+      } else {
+        options = [];
+      }
       for (int i = 0; i < 4; i++) {
         if (i < options.length) {
           _optionControllers[i].text = options[i];
