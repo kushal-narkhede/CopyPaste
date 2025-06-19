@@ -3855,8 +3855,8 @@ class _PracticeModeScreenState extends State<PracticeModeScreen> {
                                         child: Slider(
                                           value: _questionCount.toDouble(),
                                           min: 1.0,
-                                          max: 20.0,
-                                          divisions: 19,
+                                          max: _questions.length.toDouble(),
+                                          divisions: _questions.length > 1 ? _questions.length - 1 : 1,
                                           label: '$_questionCount',
                                           onChanged: (value) {
                                             setState(() {
