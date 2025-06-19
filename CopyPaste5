@@ -3537,7 +3537,7 @@ class _PracticeModeScreenState extends State<PracticeModeScreen> {
           await _dbHelper.getStudySetQuestions(widget.studySet['id']);
       setState(() {
         _questions = questions;
-        _questionCount = _questions.isNotEmpty ? _questionCount.clamp(1, _questions.length) : 1;
+        _questionCount = _questions.isNotEmpty ? _questions.length : 1;
         _isLoading = false;
       });
     } catch (e) {
