@@ -1634,6 +1634,7 @@ class _HorizontalSubjectWheelState extends State<HorizontalSubjectWheel>
     const Color(0xFFF6AD55),
     const Color(0xFF81E6D9),
     const Color(0xFFB794F4),
+    const Color(0xFFFC8181),
   ];
 
   final List<IconData> _icons = [
@@ -1669,7 +1670,7 @@ class _HorizontalSubjectWheelState extends State<HorizontalSubjectWheel>
     _selectedIndex = widget.subjects.indexOf(widget.selectedSubject);
     if (_selectedIndex == -1) _selectedIndex = 0;
     
-    // Set initial position
+    // Set initial position after the widget is built
     WidgetsBinding.instance.addPostFrameCallback((_) {
       _scrollToIndex(_selectedIndex);
     });
@@ -1739,13 +1740,15 @@ class _HorizontalSubjectWheelState extends State<HorizontalSubjectWheel>
             child: ListWheelScrollView.useDelegate(
               controller: _scrollController,
               itemExtent: 60,
-              diameterRatio: 2.0,
-              perspective: 0.005,
-              physics: const FixedExtentScrollPhysics(),
+              diameterRatio: 1.8,
+              perspective: 0.01,
+              physics: const BouncingScrollPhysics(),
               onSelectedItemChanged: _onSelectedItemChanged,
               childDelegate: ListWheelChildBuilderDelegate(
                 builder: (context, index) {
-                  final subject = widget.subjects[index % widget.subjects.length];
+                  if (index >= widget.subjects.length) return Container();
+                  
+                  final subject = widget.subjects[index];
                   final isSelected = index == _selectedIndex;
                   
                   return AnimatedContainer(
