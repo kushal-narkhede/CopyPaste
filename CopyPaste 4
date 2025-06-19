@@ -1424,12 +1424,9 @@ class HorizontalSubjectWheel extends StatefulWidget {
 
 class _HorizontalSubjectWheelState extends State<HorizontalSubjectWheel>
     with TickerProviderStateMixin {
-  late ScrollController _scrollController;
+  late FixedExtentScrollController _scrollController;
   late AnimationController _animationController;
-  late AnimationController _rotationController;
-  late Animation<double> _rotationAnimation;
   int _selectedIndex = 0;
-  double _currentRotation = 0.0;
 
   final List<Color> _gradients = [
     const Color(0xFF667eea),
@@ -1456,49 +1453,34 @@ class _HorizontalSubjectWheelState extends State<HorizontalSubjectWheel>
   @override
   void initState() {
     super.initState();
-    _scrollController = ScrollController();
+    _scrollController = FixedExtentScrollController();
     _animationController = AnimationController(
-      duration: const Duration(milliseconds: 500),
+      duration: const Duration(milliseconds: 400),
       vsync: this,
     );
-    _rotationController = AnimationController(
-      duration: const Duration(milliseconds: 800),
-      vsync: this,
-    );
-    _rotationAnimation = Tween<double>(
-      begin: 0.0,
-      end: 1.0,
-    ).animate(CurvedAnimation(
-      parent: _rotationController,
-      curve: Curves.elasticOut,
-    ));
     
     _selectedIndex = widget.subjects.indexOf(widget.selectedSubject);
     if (_selectedIndex == -1) _selectedIndex = 0;
+    
+    // Set initial position
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      _scrollController.jumpToItem(_selectedIndex);
+    });
   }
 
   @override
   void dispose() {
     _scrollController.dispose();
     _animationController.dispose();
-    _rotationController.dispose();
     super.dispose();
   }
 
-  void _selectSubject(int index) {
-    if (index == _selectedIndex) return;
-    
+  void _onSelectedItemChanged(int index) {
     setState(() {
       _selectedIndex = index;
     });
     widget.onSubjectSelected(widget.subjects[index]);
-    
-    // Calculate rotation to center the selected item
-    final targetRotation = -(2 * pi * index) / widget.subjects.length;
-    _currentRotation = targetRotation;
-    
     _animationController.forward(from: 0.0);
-    _rotationController.forward(from: 0.0);
   }
 
   @override
@@ -1508,158 +1490,201 @@ class _HorizontalSubjectWheelState extends State<HorizontalSubjectWheel>
       child: Stack(
         alignment: Alignment.center,
         children: [
-          // Background wheel effect with rotation
-          AnimatedBuilder(
-            animation: _rotationAnimation,
-            builder: (context, child) {
-              return Transform.rotate(
-                angle: _currentRotation + (_rotationAnimation.value * 0.1),
-                child: Container(
-                  width: 180,
-                  height: 180,
-                  decoration: BoxDecoration(
-                    shape: BoxShape.circle,
-                    gradient: RadialGradient(
-                      colors: [
-                        Colors.white.withOpacity(0.15),
-                        Colors.white.withOpacity(0.05),
-                        Colors.transparent,
-                      ],
-                      stops: [0.0, 0.7, 1.0],
-                    ),
-                  ),
-                ),
-              );
-            },
-          ),
-          // Outer ring
+          // Background gradient
           Container(
-            width: 170,
-            height: 170,
             decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              border: Border.all(
-                color: Colors.white.withOpacity(0.2),
-                width: 2,
+              gradient: LinearGradient(
+                begin: Alignment.topCenter,
+                end: Alignment.bottomCenter,
+                colors: [
+                  Colors.transparent,
+                  Colors.white.withOpacity(0.05),
+                  Colors.white.withOpacity(0.1),
+                  Colors.white.withOpacity(0.1),
+                  Colors.white.withOpacity(0.05),
+                  Colors.transparent,
+                ],
+                stops: [0.0, 0.2, 0.4, 0.6, 0.8, 1.0],
               ),
             ),
           ),
-          // Subject wheel
+          // Selection indicator with glow
           AnimatedBuilder(
-            animation: _rotationAnimation,
+            animation: _animationController,
             builder: (context, child) {
-              return Transform.rotate(
-                angle: _currentRotation,
-                child: Container(
-                  width: 160,
-                  height: 160,
-                  child: Stack(
-                    children: List.generate(widget.subjects.length, (index) {
-                      final angle = (2 * pi * index) / widget.subjects.length;
-                      final radius = 70.0;
-                      final isSelected = index == _selectedIndex;
-                      
-                      return Positioned(
-                        left: 80 + radius * cos(angle) - 25,
-                        top: 80 + radius * sin(angle) - 25,
-                        child: GestureDetector(
-                          onTap: () => _selectSubject(index),
-                          child: AnimatedContainer(
-                            duration: const Duration(milliseconds: 400),
-                            curve: Curves.elasticOut,
-                            width: isSelected ? 60 : 50,
-                            height: isSelected ? 60 : 50,
-                            decoration: BoxDecoration(
-                              shape: BoxShape.circle,
-                              gradient: LinearGradient(
-                                colors: isSelected
-                                    ? [_gradients[index % _gradients.length], _gradients[index % _gradients.length].withOpacity(0.7)]
-                                    : [Colors.white.withOpacity(0.3), Colors.white.withOpacity(0.1)],
-                                begin: Alignment.topLeft,
-                                end: Alignment.bottomRight,
-                              ),
-                              boxShadow: isSelected
-                                  ? [
-                                      BoxShadow(
-                                        color: _gradients[index % _gradients.length].withOpacity(0.6),
-                                        blurRadius: 20,
-                                        offset: const Offset(0, 8),
-                                        spreadRadius: 2,
-                                      ),
-                                    ]
-                                  : [
-                                      BoxShadow(
-                                        color: Colors.black.withOpacity(0.2),
-                                        blurRadius: 5,
-                                        offset: const Offset(0, 2),
-                                      ),
-                                    ],
-                            ),
-                            child: Icon(
-                              _icons[index % _icons.length],
-                              color: isSelected ? Colors.white : Colors.white.withOpacity(0.8),
-                              size: isSelected ? 24 : 20,
-                            ),
-                          ),
-                        ),
-                      );
-                    }),
+              return Container(
+                height: 60,
+                decoration: BoxDecoration(
+                  borderRadius: BorderRadius.circular(15),
+                  border: Border.all(
+                    color: _gradients[_selectedIndex % _gradients.length].withOpacity(0.8 + (_animationController.value * 0.2)),
+                    width: 3,
                   ),
-                ),
-              );
-            },
-          ),
-          // Center indicator with glow effect
-          Container(
-            width: 30,
-            height: 30,
-            decoration: BoxDecoration(
-              shape: BoxShape.circle,
-              color: Colors.white.withOpacity(0.2),
-              border: Border.all(color: Colors.white, width: 3),
-              boxShadow: [
-                BoxShadow(
-                  color: Colors.white.withOpacity(0.3),
-                  blurRadius: 10,
-                  spreadRadius: 2,
-                ),
-              ],
-            ),
-          ),
-          // Selected subject label with animation
-          Positioned(
-            bottom: 5,
-            child: AnimatedContainer(
-              duration: const Duration(milliseconds: 300),
-              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 12),
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  colors: [
-                    Colors.black.withOpacity(0.7),
-                    Colors.black.withOpacity(0.5),
+                  boxShadow: [
+                    BoxShadow(
+                      color: _gradients[_selectedIndex % _gradients.length].withOpacity(0.4 + (_animationController.value * 0.3)),
+                      blurRadius: 20 + (_animationController.value * 10),
+                      spreadRadius: 2 + (_animationController.value * 3),
+                    ),
                   ],
                 ),
-                borderRadius: BorderRadius.circular(25),
-                border: Border.all(
-                  color: _gradients[_selectedIndex % _gradients.length].withOpacity(0.5),
-                  width: 1,
-                ),
-                boxShadow: [
-                  BoxShadow(
-                    color: _gradients[_selectedIndex % _gradients.length].withOpacity(0.3),
-                    blurRadius: 10,
-                    offset: const Offset(0, 4),
-                  ),
-                ],
+              );
+            },
+          ),
+          // Subject wheel
+          Container(
+            height: 180,
+            child: ListWheelScrollView.useDelegate(
+              controller: _scrollController,
+              itemExtent: 60,
+              diameterRatio: 2.0,
+              perspective: 0.005,
+              physics: const BouncingScrollPhysics(),
+              onSelectedItemChanged: _onSelectedItemChanged,
+              childDelegate: ListWheelChildBuilderDelegate(
+                builder: (context, index) {
+                  final subject = widget.subjects[index % widget.subjects.length];
+                  final isSelected = index == _selectedIndex;
+                  
+                  return AnimatedContainer(
+                    duration: const Duration(milliseconds: 300),
+                    curve: Curves.easeOutCubic,
+                    margin: const EdgeInsets.symmetric(horizontal: 25, vertical: 5),
+                    decoration: BoxDecoration(
+                      borderRadius: BorderRadius.circular(15),
+                      gradient: LinearGradient(
+                        colors: isSelected
+                            ? [_gradients[index % _gradients.length], _gradients[index % _gradients.length].withOpacity(0.7)]
+                            : [Colors.white.withOpacity(0.15), Colors.white.withOpacity(0.05)],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      boxShadow: isSelected
+                          ? [
+                              BoxShadow(
+                                color: _gradients[index % _gradients.length].withOpacity(0.5),
+                                blurRadius: 15,
+                                offset: const Offset(0, 6),
+                                spreadRadius: 1,
+                              ),
+                            ]
+                          : [
+                              BoxShadow(
+                                color: Colors.black.withOpacity(0.1),
+                                blurRadius: 3,
+                                offset: const Offset(0, 2),
+                              ),
+                            ],
+                    ),
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        AnimatedContainer(
+                          duration: const Duration(milliseconds: 300),
+                          padding: const EdgeInsets.all(8),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: isSelected 
+                                ? Colors.white.withOpacity(0.2)
+                                : Colors.transparent,
+                          ),
+                          child: Icon(
+                            _icons[index % _icons.length],
+                            color: isSelected ? Colors.white : Colors.white.withOpacity(0.6),
+                            size: isSelected ? 30 : 26,
+                          ),
+                        ),
+                        const SizedBox(width: 15),
+                        Expanded(
+                          child: Text(
+                            subject,
+                            style: TextStyle(
+                              color: isSelected ? Colors.white : Colors.white.withOpacity(0.7),
+                              fontSize: isSelected ? 20 : 17,
+                              fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                            ),
+                            textAlign: TextAlign.left,
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                        if (isSelected)
+                          Container(
+                            margin: const EdgeInsets.only(right: 15),
+                            padding: const EdgeInsets.all(4),
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              color: Colors.white.withOpacity(0.3),
+                            ),
+                            child: Icon(
+                              Icons.check,
+                              color: Colors.white,
+                              size: 16,
+                            ),
+                          ),
+                      ],
+                    ),
+                  );
+                },
+                childCount: widget.subjects.length,
               ),
-              child: Text(
-                widget.subjects[_selectedIndex],
-                style: const TextStyle(
-                  color: Colors.white,
-                  fontSize: 16,
-                  fontWeight: FontWeight.bold,
+            ),
+          ),
+          // Top and bottom fade effects
+          Positioned(
+            top: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              height: 40,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.black.withOpacity(0.9),
+                    Colors.black.withOpacity(0.5),
+                    Colors.transparent,
+                  ],
                 ),
               ),
+            ),
+          ),
+          Positioned(
+            bottom: 0,
+            left: 0,
+            right: 0,
+            child: Container(
+              height: 40,
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  begin: Alignment.topCenter,
+                  end: Alignment.bottomCenter,
+                  colors: [
+                    Colors.transparent,
+                    Colors.black.withOpacity(0.5),
+                    Colors.black.withOpacity(0.9),
+                  ],
+                ),
+              ),
+            ),
+          ),
+          // Center line indicators
+          Positioned(
+            top: 70,
+            left: 0,
+            right: 0,
+            child: Container(
+              height: 2,
+              color: _gradients[_selectedIndex % _gradients.length].withOpacity(0.6),
+            ),
+          ),
+          Positioned(
+            bottom: 70,
+            left: 0,
+            right: 0,
+            child: Container(
+              height: 2,
+              color: _gradients[_selectedIndex % _gradients.length].withOpacity(0.6),
             ),
           ),
         ],
