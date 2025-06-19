@@ -20,7 +20,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final TextEditingController followupController = TextEditingController();
-  final ScrollController _scrollController = ScrollController();
+  late FixedExtentScrollController _scrollController;
   late final ChatBloc _chatBloc; // Create bloc instance here
   final DatabaseHelper _dbHelper = DatabaseHelper();
 
@@ -210,6 +210,7 @@ class _HomePageState extends State<HomePage> {
   @override
   void dispose() {
     _scrollController.dispose();
+    _animationController.dispose();
     _chatBloc.close(); // Don't forget to close the bloc
     super.dispose();
   }
@@ -1612,29 +1613,28 @@ class HorizontalSubjectWheel extends StatefulWidget {
 
 class _HorizontalSubjectWheelState extends State<HorizontalSubjectWheel>
     with TickerProviderStateMixin {
-  late ScrollController _scrollController;
+  late FixedExtentScrollController _scrollController;
   late AnimationController _animationController;
   int _selectedIndex = 0;
 
   final List<Color> _gradients = [
-    const Color(0xFF4A5568),
-    const Color(0xFF805AD5),
-    const Color(0xFF3182CE),
-    const Color(0xFF38A169),
-    const Color(0xFFE53E3E),
-    const Color(0xFF718096),
-    const Color(0xFFD69E2E),
-    const Color(0xFFED8936),
-    const Color(0xFF9F7AEA),
-    const Color(0xFFF56565),
-    const Color(0xFF48BB78),
-    const Color(0xFF4299E1),
-    const Color(0xFFED64A6),
-    const Color(0xFF68D391),
-    const Color(0xFFF6AD55),
-    const Color(0xFF81E6D9),
-    const Color(0xFFB794F4),
-    const Color(0xFFFC8181),
+    const Color(0xFF667eea),
+    const Color(0xFFf093fb),
+    const Color(0xFF4facfe),
+    const Color(0xFF43e97b),
+    const Color(0xFFfa709a),
+    const Color(0xFFa8edea),
+    const Color(0xFFffecd2),
+    const Color(0xFFff9a9e),
+    const Color(0xFF667eea),
+    const Color(0xFFf093fb),
+    const Color(0xFF4facfe),
+    const Color(0xFF43e97b),
+    const Color(0xFFfa709a),
+    const Color(0xFFa8edea),
+    const Color(0xFFffecd2),
+    const Color(0xFFff9a9e),
+    const Color(0xFF667eea),
   ];
 
   final List<IconData> _icons = [
@@ -1661,7 +1661,7 @@ class _HorizontalSubjectWheelState extends State<HorizontalSubjectWheel>
   @override
   void initState() {
     super.initState();
-    _scrollController = ScrollController();
+    _scrollController = FixedExtentScrollController();
     _animationController = AnimationController(
       duration: const Duration(milliseconds: 400),
       vsync: this,
@@ -1672,7 +1672,7 @@ class _HorizontalSubjectWheelState extends State<HorizontalSubjectWheel>
     
     // Set initial position after the widget is built
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _scrollToIndex(_selectedIndex);
+      _scrollController.jumpToItem(_selectedIndex);
     });
   }
 
@@ -1681,18 +1681,6 @@ class _HorizontalSubjectWheelState extends State<HorizontalSubjectWheel>
     _scrollController.dispose();
     _animationController.dispose();
     super.dispose();
-  }
-
-  void _scrollToIndex(int index) {
-    if (_scrollController.hasClients) {
-      final itemHeight = 60.0;
-      final targetOffset = index * itemHeight;
-      _scrollController.animateTo(
-        targetOffset,
-        duration: const Duration(milliseconds: 300),
-        curve: Curves.easeOutCubic,
-      );
-    }
   }
 
   void _onSelectedItemChanged(int index) {
@@ -1742,7 +1730,7 @@ class _HorizontalSubjectWheelState extends State<HorizontalSubjectWheel>
               itemExtent: 60,
               diameterRatio: 1.8,
               perspective: 0.01,
-              physics: const BouncingScrollPhysics(),
+              physics: const FixedExtentScrollPhysics(),
               onSelectedItemChanged: _onSelectedItemChanged,
               childDelegate: ListWheelChildBuilderDelegate(
                 builder: (context, index) {
