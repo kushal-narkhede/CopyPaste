@@ -20,7 +20,7 @@ class HomePage extends StatefulWidget {
 
 class _HomePageState extends State<HomePage> {
   final TextEditingController followupController = TextEditingController();
-  late FixedExtentScrollController _scrollController;
+  final ScrollController _scrollController = ScrollController(); // For chat only
   late final ChatBloc _chatBloc; // Create bloc instance here
   final DatabaseHelper _dbHelper = DatabaseHelper();
 
