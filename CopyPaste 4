@@ -49,7 +49,17 @@ class _HomePageState extends State<HomePage> {
     "History",
     "Geography",
     "Computer Science",
-    "Economics"
+    "Economics",
+    "Literature",
+    "Art",
+    "Music",
+    "Psychology",
+    "Sociology",
+    "Philosophy",
+    "Astronomy",
+    "Geology",
+    "Environmental Science",
+    "Political Science"
   ];
 
   @override
@@ -1429,14 +1439,24 @@ class _HorizontalSubjectWheelState extends State<HorizontalSubjectWheel>
   int _selectedIndex = 0;
 
   final List<Color> _gradients = [
-    const Color(0xFF667eea),
-    const Color(0xFFf093fb),
-    const Color(0xFF4facfe),
-    const Color(0xFF43e97b),
-    const Color(0xFFfa709a),
-    const Color(0xFFa8edea),
-    const Color(0xFFffecd2),
-    const Color(0xFFff9a9e),
+    const Color(0xFF4A5568),
+    const Color(0xFF805AD5),
+    const Color(0xFF3182CE),
+    const Color(0xFF38A169),
+    const Color(0xFFE53E3E),
+    const Color(0xFF718096),
+    const Color(0xFFD69E2E),
+    const Color(0xFFED8936),
+    const Color(0xFF9F7AEA),
+    const Color(0xFFF56565),
+    const Color(0xFF48BB78),
+    const Color(0xFF4299E1),
+    const Color(0xFFED64A6),
+    const Color(0xFF68D391),
+    const Color(0xFFF6AD55),
+    const Color(0xFF81E6D9),
+    const Color(0xFFB794F4),
+    const Color(0xFFFC8181),
   ];
 
   final List<IconData> _icons = [
@@ -1448,6 +1468,16 @@ class _HorizontalSubjectWheelState extends State<HorizontalSubjectWheel>
     Icons.public,
     Icons.computer,
     Icons.trending_up,
+    Icons.book,
+    Icons.palette,
+    Icons.music_note,
+    Icons.psychology,
+    Icons.people,
+    Icons.lightbulb,
+    Icons.visibility,
+    Icons.landscape,
+    Icons.eco,
+    Icons.gavel,
   ];
 
   @override
@@ -1644,25 +1674,6 @@ class _HorizontalSubjectWheelState extends State<HorizontalSubjectWheel>
                     Colors.black.withOpacity(0.9),
                     Colors.black.withOpacity(0.5),
                     Colors.transparent,
-                  ],
-                ),
-              ),
-            ),
-          ),
-          Positioned(
-            bottom: 0,
-            left: 0,
-            right: 0,
-            child: Container(
-              height: 40,
-              decoration: BoxDecoration(
-                gradient: LinearGradient(
-                  begin: Alignment.topCenter,
-                  end: Alignment.bottomCenter,
-                  colors: [
-                    Colors.transparent,
-                    Colors.black.withOpacity(0.5),
-                    Colors.black.withOpacity(0.9),
                   ],
                 ),
               ),
