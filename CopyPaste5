@@ -3537,6 +3537,7 @@ class _PracticeModeScreenState extends State<PracticeModeScreen> {
           await _dbHelper.getStudySetQuestions(widget.studySet['id']);
       setState(() {
         _questions = questions;
+        _questionCount = _questions.isNotEmpty ? _questionCount.clamp(1, _questions.length) : 1;
         _isLoading = false;
       });
     } catch (e) {
@@ -3853,7 +3854,7 @@ class _PracticeModeScreenState extends State<PracticeModeScreen> {
                                           ),
                                         ),
                                         child: Slider(
-                                          value: _questionCount.toDouble(),
+                                          value: _questionCount.clamp(1, _questions.length).toDouble(),
                                           min: 1.0,
                                           max: _questions.length.toDouble(),
                                           divisions: _questions.length > 1 ? _questions.length - 1 : 1,
