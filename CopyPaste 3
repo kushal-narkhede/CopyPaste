@@ -2996,6 +2996,7 @@ class _ProfileTabState extends State<ProfileTab>
   final DatabaseHelper _dbHelper = DatabaseHelper();
   Map<String, dynamic>? _userStats;
   File? _profileImage;
+  File? _userProfileImage; // Add profile image state
 
   @override
   bool get wantKeepAlive => true;
@@ -3005,6 +3006,14 @@ class _ProfileTabState extends State<ProfileTab>
     super.initState();
     _loadUserStats();
     _loadProfileImage();
+    _loadUserProfileImage(); // Load profile image on init
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Refresh profile image when screen becomes visible
+    _refreshUserProfileImage();
   }
 
   Future<void> _loadUserStats() async {
@@ -3026,6 +3035,24 @@ class _ProfileTabState extends State<ProfileTab>
         _profileImage = File(path);
       });
     }
+  }
+
+  Future<void> _loadUserProfileImage() async {
+    final prefs = await SharedPreferences.getInstance();
+    final path = prefs.getString('profile_image_${widget.username}');
+    if (path != null && path.isNotEmpty) {
+      setState(() {
+        _userProfileImage = File(path);
+      });
+    }
+  }
+
+  void _refreshUserProfileImage() async {
+    final prefs = await SharedPreferences.getInstance();
+    final path = prefs.getString('profile_image_${widget.username}');
+    setState(() {
+      _userProfileImage = path != null && path.isNotEmpty ? File(path) : null;
+    });
   }
 
   Future<void> _pickImage() async {
@@ -3721,6 +3748,13 @@ class _PracticeModeScreenState extends State<PracticeModeScreen>
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    // Refresh profile image when screen becomes visible
+    _refreshUserProfileImage();
+  }
+
+  @override
   void dispose() {
     _chatController.dispose();
     _chatScrollController.dispose();
@@ -3759,6 +3793,14 @@ class _PracticeModeScreenState extends State<PracticeModeScreen>
         _userProfileImage = File(path);
       });
     }
+  }
+
+  void _refreshUserProfileImage() async {
+    final prefs = await SharedPreferences.getInstance();
+    final path = prefs.getString('profile_image_${widget.username}');
+    setState(() {
+      _userProfileImage = path != null && path.isNotEmpty ? File(path) : null;
+    });
   }
 
   void _startPractice(BuildContext context) {
@@ -3819,6 +3861,9 @@ class _PracticeModeScreenState extends State<PracticeModeScreen>
     }
     prompt +=
         "\nPlease help me understand this question and explain the correct answer.";
+
+    // Refresh profile image before showing chat
+    _refreshUserProfileImage();
 
     // Show the chat interface
     setState(() {
@@ -4839,33 +4884,40 @@ class _PracticeModeScreenState extends State<PracticeModeScreen>
                             ),
                             if (isUser) ...[
                               const SizedBox(width: 8),
-                              Container(
-                                padding: const EdgeInsets.all(8),
-                                decoration: BoxDecoration(
-                                  gradient: const LinearGradient(
-                                    colors: [Color(0xFF4facfe), Color(0xFF00f2fe)],
-                                    begin: Alignment.topLeft,
-                                    end: Alignment.bottomRight,
-                                  ),
-                                  borderRadius: BorderRadius.circular(20),
-                                  boxShadow: [
-                                    BoxShadow(
-                                      color: const Color(0xFF4facfe).withOpacity(0.3),
-                                      blurRadius: 8,
-                                      offset: const Offset(0, 2),
-                                    ),
-                                  ],
-                                ),
-                                child: Text(
-                                  widget.username.isNotEmpty 
-                                      ? widget.username.substring(0, 1).toUpperCase()
-                                      : 'U',
-                                  style: const TextStyle(
-                                    color: Colors.white,
-                                    fontSize: 14,
-                                    fontWeight: FontWeight.bold,
-                                  ),
-                                ),
+                              CircleAvatar(
+                                radius: 16,
+                                backgroundColor: Colors.transparent,
+                                backgroundImage: _userProfileImage != null ? FileImage(_userProfileImage!) : null,
+                                child: _userProfileImage == null
+                                    ? Container(
+                                        padding: const EdgeInsets.all(8),
+                                        decoration: BoxDecoration(
+                                          gradient: const LinearGradient(
+                                            colors: [Color(0xFF4facfe), Color(0xFF00f2fe)],
+                                            begin: Alignment.topLeft,
+                                            end: Alignment.bottomRight,
+                                          ),
+                                          borderRadius: BorderRadius.circular(20),
+                                          boxShadow: [
+                                            BoxShadow(
+                                              color: const Color(0xFF4facfe).withOpacity(0.3),
+                                              blurRadius: 8,
+                                              offset: const Offset(0, 2),
+                                            ),
+                                          ],
+                                        ),
+                                        child: Text(
+                                          widget.username.isNotEmpty 
+                                              ? widget.username.substring(0, 1).toUpperCase()
+                                              : 'U',
+                                          style: const TextStyle(
+                                            color: Colors.white,
+                                            fontSize: 14,
+                                            fontWeight: FontWeight.bold,
+                                          ),
+                                        ),
+                                      )
+                                    : null,
                               ),
                             ],
                           ],
