@@ -3687,33 +3687,37 @@ class PracticeModeScreen extends StatefulWidget {
   _PracticeModeScreenState createState() => _PracticeModeScreenState();
 }
 
-class _PracticeModeScreenState extends State<PracticeModeScreen> {
+class _PracticeModeScreenState extends State<PracticeModeScreen>
+    with AutomaticKeepAliveClientMixin {
   final DatabaseHelper _dbHelper = DatabaseHelper();
+  final ChatBloc _chatBloc = ChatBloc();
+  final TextEditingController _chatController = TextEditingController();
+  final ScrollController _chatScrollController = ScrollController();
+
+  List<Map<String, dynamic>> _questions = [];
+  int _questionCount = 5;
   bool _isLoading = true;
   bool _hasError = false;
   String _errorMessage = '';
-  List<Map<String, dynamic>> _questions = [];
-  int _questionCount = 20;
-  String _selectedMode = 'classic';
+  String _selectedMode = '';
   bool _showModeSelection = true;
   bool _showQuizArea = false;
   bool _showScoreSummary = false;
+  bool _showChat = false;
   int _currentQuestionIndex = 0;
+  int _correctAnswers = 0;
   String? _selectedAnswer;
   bool _showAnswer = false;
-  int _correctAnswers = 0;
-  bool _showChat = false;
-  late ChatBloc _chatBloc;
-  final TextEditingController _chatController = TextEditingController();
-  final ScrollController _chatScrollController = ScrollController();
-  double _chatHeightRatio = 0.5; // Default 50% of available area
-  bool _isResizing = false;
+  File? _userProfileImage; // Add profile image state
+
+  @override
+  bool get wantKeepAlive => true;
 
   @override
   void initState() {
     super.initState();
     _loadQuestions();
-    _chatBloc = ChatBloc();
+    _loadUserProfileImage(); // Load profile image on init
   }
 
   @override
@@ -3743,6 +3747,16 @@ class _PracticeModeScreenState extends State<PracticeModeScreen> {
         _hasError = true;
         _errorMessage = e.toString();
         _isLoading = false;
+      });
+    }
+  }
+
+  void _loadUserProfileImage() async {
+    final prefs = await SharedPreferences.getInstance();
+    final path = prefs.getString('profile_image_${widget.username}');
+    if (path != null && path.isNotEmpty) {
+      setState(() {
+        _userProfileImage = File(path);
       });
     }
   }
