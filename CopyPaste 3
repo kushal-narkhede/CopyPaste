@@ -4236,6 +4236,12 @@ class _PracticeModeScreenState extends State<PracticeModeScreen> {
                                               _showModeSelection = true;
                                               _showQuizArea = false;
                                               _showScoreSummary = false;
+                                              // Reset all quiz state variables to prevent auto-answering
+                                              _selectedAnswer = null;
+                                              _showAnswer = false;
+                                              _showChat = false;
+                                              _currentQuestionIndex = 0;
+                                              _correctAnswers = 0;
                                             });
                                           },
                                           style: ElevatedButton.styleFrom(
