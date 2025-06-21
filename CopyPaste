@@ -2925,11 +2925,14 @@ class _ProfileTabState extends State<ProfileTab>
                                     Icons.school,
                                     Colors.blue,
                                   ),
-                                  _buildStatItem(
-                                    'Points',
-                                    widget.userPoints.toString(),
-                                    Icons.diamond,
-                                    Colors.amber,
+                                  Padding(
+                                    padding: const EdgeInsets.only(left: 5),
+                                    child: _buildStatItem(
+                                      'Points',
+                                      widget.userPoints.toString(),
+                                      Icons.diamond,
+                                      Colors.amber,
+                                    ),
                                   ),
                                   _buildStatItem(
                                     'Current Theme',
