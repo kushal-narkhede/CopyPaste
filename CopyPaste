@@ -1313,7 +1313,7 @@ Generate exactly $numberOfQuestions questions for $selectedSubject:
                 ],
               ),
             ),
-            const SizedBox(height: 20),
+            const Spacer(),
             // Points information
             Container(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
@@ -1369,7 +1369,8 @@ Generate exactly $numberOfQuestions questions for $selectedSubject:
                 ],
               ),
             ),
-            const Spacer(),
+            const SizedBox(height: 20),
+            // Start Learning Button
             Container(
               width: double.infinity,
               height: 60,
@@ -1444,7 +1445,7 @@ Generate exactly $numberOfQuestions questions for $selectedSubject:
                           ),
               ),
             ),
-            const SizedBox(height: 20),
+            const Spacer(),
             // Removed controls locked message to fix pixel overflow
             Opacity(
               opacity: isQuizActive ? 0.5 : 1.0,
@@ -1525,136 +1526,6 @@ Generate exactly $numberOfQuestions questions for $selectedSubject:
               ),
             ),
             const SizedBox(height: 20),
-            // Points information
-            Container(
-              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 15),
-              decoration: BoxDecoration(
-                color: Colors.white.withOpacity(0.1),
-                borderRadius: BorderRadius.circular(12),
-                border: Border.all(
-                  color: Colors.white.withOpacity(0.2),
-                  width: 1,
-                ),
-              ),
-              child: Column(
-                children: [
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(
-                        Icons.check_circle,
-                        color: Colors.green,
-                        size: 20,
-                      ),
-                      const SizedBox(width: 8),
-                      const Text(
-                        'Correct Answer: +15',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 8),
-                  Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      const Icon(
-                        Icons.cancel,
-                        color: Colors.red,
-                        size: 20,
-                      ),
-                      const SizedBox(width: 8),
-                      const Text(
-                        'Incorrect Answer: -5',
-                        style: TextStyle(
-                          fontSize: 16,
-                          fontWeight: FontWeight.w600,
-                          color: Colors.white,
-                        ),
-                      ),
-                    ],
-                  ),
-                ],
-              ),
-            ),
-            const Spacer(),
-            Container(
-              width: double.infinity,
-              height: 60,
-              decoration: BoxDecoration(
-                gradient: const LinearGradient(
-                  colors: [Color(0xFF4facfe), Color(0xFF00f2fe)],
-                  begin: Alignment.topLeft,
-                  end: Alignment.bottomRight,
-                ),
-                borderRadius: BorderRadius.circular(30),
-                boxShadow: [
-                  BoxShadow(
-                    color: const Color(0xFF4facfe).withOpacity(0.3),
-                    blurRadius: 20,
-                    offset: const Offset(0, 10),
-                  ),
-                ],
-              ),
-              child: ElevatedButton(
-                onPressed: (isWaitingForQuestions || isQuizActive)
-                    ? null
-                    : () {
-                        _generateQuestions();
-                      },
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: Colors.transparent,
-                  shadowColor: Colors.transparent,
-                  shape: RoundedRectangleBorder(
-                    borderRadius: BorderRadius.circular(30),
-                  ),
-                ),
-                child: isWaitingForQuestions
-                    ? Row(
-                        mainAxisAlignment: MainAxisAlignment.center,
-                        children: [
-                          SizedBox(
-                            width: 20,
-                            height: 20,
-                            child: CircularProgressIndicator(
-                              strokeWidth: 2,
-                              valueColor:
-                                  AlwaysStoppedAnimation<Color>(Colors.white),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          const Text(
-                            'Generating Questions...',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                        ],
-                      )
-                    : isQuizActive
-                        ? const Text(
-                            'Quiz in Progress',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          )
-                        : const Text(
-                            'Start Learning',
-                            style: TextStyle(
-                              fontSize: 18,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-              ),
-            ),
           ],
         ),
       ),
