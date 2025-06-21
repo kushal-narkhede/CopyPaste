@@ -11,10 +11,12 @@ import 'package:shared_preferences/shared_preferences.dart';
 
 class HomePage extends StatefulWidget {
   final String username;
+  final Function(int)? onPointsUpdated; // Add callback for points updates
 
   const HomePage({
     super.key,
     required this.username,
+    this.onPointsUpdated, // Add this parameter
   });
 
   @override
@@ -2128,6 +2130,11 @@ Generate exactly $numberOfQuestions questions for $selectedSubject:
       
       // Update points in database
       await _dbHelper.updateUserPoints(widget.username, newPoints);
+      
+      // Call the callback to update the main app's points display
+      if (widget.onPointsUpdated != null) {
+        widget.onPointsUpdated!(newPoints);
+      }
       
       // Show success message
       ScaffoldMessenger.of(context).showSnackBar(
