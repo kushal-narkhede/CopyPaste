@@ -1062,7 +1062,7 @@ Generate exactly $numberOfQuestions questions for $selectedSubject:
               children: [
                 const Icon(Icons.check_circle, color: Colors.white),
                 const SizedBox(width: 12),
-                Text('Correct! +$pointsToAward points'),
+                const Text('Correct!'),
               ],
             ),
             backgroundColor: Colors.green.shade600,
@@ -1089,7 +1089,7 @@ Generate exactly $numberOfQuestions questions for $selectedSubject:
               children: [
                 const Icon(Icons.cancel, color: Colors.white),
                 const SizedBox(width: 12),
-                const Text('Incorrect! -5 points'),
+                const Text('Incorrect!'),
               ],
             ),
             backgroundColor: Colors.red.shade600,
