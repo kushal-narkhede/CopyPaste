@@ -1323,6 +1323,76 @@ Generate exactly $numberOfQuestions questions for $selectedSubject:
               icon: const Icon(Icons.arrow_back, color: Colors.white),
               onPressed: _returnToHome,
             ),
+            // Powerup Buttons (small, in header)
+            if (_userPowerups.isNotEmpty && _userPowerups.values.any((count) => count > 0))
+              Row(
+                children: _powerups.map((powerup) {
+                  final powerupId = powerup['id'];
+                  final userCount = _userPowerups[powerupId] ?? 0;
+                  final canUse = userCount > 0;
+
+                  return Padding(
+                    padding: const EdgeInsets.only(right: 8),
+                    child: GestureDetector(
+                      onTap: canUse ? () => _usePowerup(powerupId) : null,
+                      child: Container(
+                        width: 40,
+                        height: 40,
+                        decoration: BoxDecoration(
+                          gradient: LinearGradient(
+                            colors: canUse
+                                ? [powerup['color'], powerup['color'].withOpacity(0.8)]
+                                : [Colors.grey.shade600, Colors.grey.shade700],
+                            begin: Alignment.topLeft,
+                            end: Alignment.bottomRight,
+                          ),
+                          borderRadius: BorderRadius.circular(12),
+                          boxShadow: [
+                            BoxShadow(
+                              color: canUse
+                                  ? powerup['color'].withOpacity(0.3)
+                                  : Colors.grey.withOpacity(0.2),
+                              blurRadius: 4,
+                              offset: const Offset(0, 2),
+                            ),
+                          ],
+                        ),
+                        child: Stack(
+                          children: [
+                            Center(
+                              child: Icon(
+                                powerup['icon'],
+                                color: Colors.white,
+                                size: 18,
+                              ),
+                            ),
+                            if (userCount > 0)
+                              Positioned(
+                                right: 2,
+                                top: 2,
+                                child: Container(
+                                  padding: const EdgeInsets.all(2),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white,
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(
+                                    '$userCount',
+                                    style: TextStyle(
+                                      color: powerup['color'],
+                                      fontSize: 8,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                  ),
+                                ),
+                              ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
             Container(
               padding: const EdgeInsets.symmetric(
                 horizontal: 16,
@@ -1474,271 +1544,46 @@ Generate exactly $numberOfQuestions questions for $selectedSubject:
 
         // Navigation Buttons
         if (!showAnswer && selectedAnswer != null)
-          Column(
-            children: [
-              // Powerup Buttons (before submitting answer)
-              if (_userPowerups.isNotEmpty && _userPowerups.values.any((count) => count > 0))
-                Padding(
-                  padding: const EdgeInsets.only(top: 24, bottom: 16),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Powerups',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      SizedBox(
-                        height: 80,
-                        child: ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          itemCount: _powerups.length,
-                          itemBuilder: (context, index) {
-                            final powerup = _powerups[index];
-                            final powerupId = powerup['id'];
-                            final userCount = _userPowerups[powerupId] ?? 0;
-                            final canUse = userCount > 0;
-
-                            return Padding(
-                              padding: const EdgeInsets.only(right: 12),
-                              child: GestureDetector(
-                                onTap: canUse ? () => _usePowerup(powerupId) : null,
-                                child: Container(
-                                  width: 120,
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      colors: canUse
-                                          ? [powerup['color'], powerup['color'].withOpacity(0.8)]
-                                          : [Colors.grey.shade600, Colors.grey.shade700],
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                    ),
-                                    borderRadius: BorderRadius.circular(16),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: canUse
-                                            ? powerup['color'].withOpacity(0.3)
-                                            : Colors.grey.withOpacity(0.2),
-                                        blurRadius: 8,
-                                        offset: const Offset(0, 4),
-                                      ),
-                                    ],
-                                  ),
-                                  child: Stack(
-                                    children: [
-                                      Padding(
-                                        padding: const EdgeInsets.all(12),
-                                        child: Column(
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          children: [
-                                            Icon(
-                                              powerup['icon'],
-                                              color: Colors.white,
-                                              size: 24,
-                                            ),
-                                            const SizedBox(height: 4),
-                                            Text(
-                                              powerup['name'],
-                                              style: const TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                              textAlign: TextAlign.center,
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      if (userCount > 0)
-                                        Positioned(
-                                          right: 8,
-                                          top: 8,
-                                          child: Container(
-                                            padding: const EdgeInsets.all(4),
-                                            decoration: BoxDecoration(
-                                              color: Colors.white,
-                                              borderRadius: BorderRadius.circular(8),
-                                            ),
-                                            child: Text(
-                                              '$userCount',
-                                              style: TextStyle(
-                                                color: powerup['color'],
-                                                fontSize: 10,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
+          Container(
+            width: double.infinity,
+            height: 60,
+            decoration: BoxDecoration(
+              gradient: const LinearGradient(
+                colors: [Color(0xFF667eea), Color(0xFF764ba2)],
+                begin: Alignment.topLeft,
+                end: Alignment.bottomRight,
+              ),
+              borderRadius: BorderRadius.circular(30),
+              boxShadow: [
+                BoxShadow(
+                  color: const Color(0xFF667eea).withOpacity(0.3),
+                  blurRadius: 20,
+                  offset: const Offset(0, 10),
                 ),
-              // Submit Answer Button
-              Container(
-                width: double.infinity,
-                height: 60,
-                decoration: BoxDecoration(
-                  gradient: const LinearGradient(
-                    colors: [Color(0xFF667eea), Color(0xFF764ba2)],
-                    begin: Alignment.topLeft,
-                    end: Alignment.bottomRight,
-                  ),
+              ],
+            ),
+            child: ElevatedButton(
+              onPressed: _submitAnswer,
+              style: ElevatedButton.styleFrom(
+                backgroundColor: Colors.transparent,
+                shadowColor: Colors.transparent,
+                shape: RoundedRectangleBorder(
                   borderRadius: BorderRadius.circular(30),
-                  boxShadow: [
-                    BoxShadow(
-                      color: const Color(0xFF667eea).withOpacity(0.3),
-                      blurRadius: 20,
-                      offset: const Offset(0, 10),
-                    ),
-                  ],
-                ),
-                child: ElevatedButton(
-                  onPressed: _submitAnswer,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: Colors.transparent,
-                    shadowColor: Colors.transparent,
-                    shape: RoundedRectangleBorder(
-                      borderRadius: BorderRadius.circular(30),
-                    ),
-                  ),
-                  child: const Text(
-                    'Submit Answer',
-                    style: TextStyle(
-                      fontSize: 18,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
                 ),
               ),
-            ],
+              child: const Text(
+                'Submit Answer',
+                style: TextStyle(
+                  fontSize: 18,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.white,
+                ),
+              ),
+            ),
           )
         else if (showAnswer)
           Column(
             children: [
-              // Powerup Buttons
-              if (_userPowerups.isNotEmpty && _userPowerups.values.any((count) => count > 0))
-                Padding(
-                  padding: const EdgeInsets.only(top: 24),
-                  child: Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      const Text(
-                        'Powerups',
-                        style: TextStyle(
-                          fontSize: 18,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                        ),
-                      ),
-                      const SizedBox(height: 12),
-                      SizedBox(
-                        height: 80,
-                        child: ListView.builder(
-                          scrollDirection: Axis.horizontal,
-                          itemCount: _powerups.length,
-                          itemBuilder: (context, index) {
-                            final powerup = _powerups[index];
-                            final powerupId = powerup['id'];
-                            final userCount = _userPowerups[powerupId] ?? 0;
-                            final canUse = userCount > 0;
-
-                            return Padding(
-                              padding: const EdgeInsets.only(right: 12),
-                              child: GestureDetector(
-                                onTap: canUse ? () => _usePowerup(powerupId) : null,
-                                child: Container(
-                                  width: 120,
-                                  decoration: BoxDecoration(
-                                    gradient: LinearGradient(
-                                      colors: canUse
-                                          ? [powerup['color'], powerup['color'].withOpacity(0.8)]
-                                          : [Colors.grey.shade600, Colors.grey.shade700],
-                                      begin: Alignment.topLeft,
-                                      end: Alignment.bottomRight,
-                                    ),
-                                    borderRadius: BorderRadius.circular(16),
-                                    boxShadow: [
-                                      BoxShadow(
-                                        color: canUse
-                                            ? powerup['color'].withOpacity(0.3)
-                                            : Colors.grey.withOpacity(0.2),
-                                        blurRadius: 8,
-                                        offset: const Offset(0, 4),
-                                      ),
-                                    ],
-                                  ),
-                                  child: Stack(
-                                    children: [
-                                      Padding(
-                                        padding: const EdgeInsets.all(12),
-                                        child: Column(
-                                          mainAxisAlignment: MainAxisAlignment.center,
-                                          children: [
-                                            Icon(
-                                              powerup['icon'],
-                                              color: Colors.white,
-                                              size: 24,
-                                            ),
-                                            const SizedBox(height: 4),
-                                            Text(
-                                              powerup['name'],
-                                              style: const TextStyle(
-                                                color: Colors.white,
-                                                fontSize: 12,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                              textAlign: TextAlign.center,
-                                              maxLines: 1,
-                                              overflow: TextOverflow.ellipsis,
-                                            ),
-                                          ],
-                                        ),
-                                      ),
-                                      if (userCount > 0)
-                                        Positioned(
-                                          right: 8,
-                                          top: 8,
-                                          child: Container(
-                                            padding: const EdgeInsets.all(4),
-                                            decoration: BoxDecoration(
-                                              color: Colors.white,
-                                              borderRadius: BorderRadius.circular(8),
-                                            ),
-                                            child: Text(
-                                              '$userCount',
-                                              style: TextStyle(
-                                                color: powerup['color'],
-                                                fontSize: 10,
-                                                fontWeight: FontWeight.bold,
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                    ],
-                                  ),
-                                ),
-                              ),
-                            );
-                          },
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
               // Ask AI for Help Button
               Padding(
                 padding: const EdgeInsets.only(top: 24),
