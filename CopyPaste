@@ -3948,6 +3948,9 @@ class _PracticeModeScreenState extends State<PracticeModeScreen>
     // Refresh profile image before showing chat
     _refreshUserProfileImage();
 
+    // Clear previous chat history
+    _chatBloc.add(ChatClearHistoryEvent());
+
     // Show the chat interface
     setState(() {
       _showChat = true;
