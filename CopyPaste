@@ -1042,6 +1042,11 @@ Generate exactly $numberOfQuestions questions for $selectedSubject:
         final newPoints = currentPoints + pointsToAward;
         await _dbHelper.updateUserPoints(username, newPoints);
         
+        // Call the callback to update the main app's points display
+        if (widget.onPointsUpdated != null) {
+          widget.onPointsUpdated!(newPoints);
+        }
+        
         // Reset double points after use
         if (_doublePointsActive) {
           _doublePointsActive = false;
@@ -1068,6 +1073,11 @@ Generate exactly $numberOfQuestions questions for $selectedSubject:
         pointsToAward = -5;
         final newPoints = currentPoints + pointsToAward;
         await _dbHelper.updateUserPoints(username, newPoints);
+        
+        // Call the callback to update the main app's points display
+        if (widget.onPointsUpdated != null) {
+          widget.onPointsUpdated!(newPoints);
+        }
         
         // Show penalty message
         ScaffoldMessenger.of(context).showSnackBar(
