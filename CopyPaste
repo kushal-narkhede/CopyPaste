@@ -1055,22 +1055,6 @@ Generate exactly $numberOfQuestions questions for $selectedSubject:
           _doublePointsActive = false;
         }
         
-        // Show success message
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                const Icon(Icons.check_circle, color: Colors.white),
-                const SizedBox(width: 12),
-                const Text(''),
-              ],
-            ),
-            backgroundColor: Colors.green.shade600,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            duration: const Duration(seconds: 2),
-          ),
-        );
       } else {
         // Deduct points for wrong answer
         pointsToAward = -5;
@@ -1082,22 +1066,6 @@ Generate exactly $numberOfQuestions questions for $selectedSubject:
           widget.onPointsUpdated!(newPoints);
         }
         
-        // Show penalty message
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Row(
-              children: [
-                const Icon(Icons.cancel, color: Colors.white),
-                const SizedBox(width: 12),
-                const Text(''),
-              ],
-            ),
-            backgroundColor: Colors.red.shade600,
-            behavior: SnackBarBehavior.floating,
-            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-            duration: const Duration(seconds: 2),
-          ),
-        );
       }
     } catch (e) {
       // Show error message if points update fails
