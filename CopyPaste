@@ -1018,7 +1018,7 @@ Generate exactly $numberOfQuestions questions for $selectedSubject:
     });
   }
 
-  void _submitAnswer() {
+  void _submitAnswer() async {
     if (selectedAnswer == null) return;
 
     final isCorrect =
@@ -1028,16 +1028,82 @@ Generate exactly $numberOfQuestions questions for $selectedSubject:
       showAnswer = true;
       if (isCorrect) {
         answeredCorrectly[currentQuestionIndex] = true;
+      }
+    });
+
+    // Handle points for both correct and incorrect answers
+    try {
+      final currentPoints = await _dbHelper.getUserPoints(username);
+      int pointsToAward;
+      
+      if (isCorrect) {
         // Award points for correct answer
-        int pointsToAward = _doublePointsActive ? 100 : 50;
-        _dbHelper.updateUserPoints(username, pointsToAward);
+        pointsToAward = _doublePointsActive ? 30 : 15; // Double points: 30, normal: 15
+        final newPoints = currentPoints + pointsToAward;
+        await _dbHelper.updateUserPoints(username, newPoints);
         
         // Reset double points after use
         if (_doublePointsActive) {
           _doublePointsActive = false;
         }
+        
+        // Show success message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.check_circle, color: Colors.white),
+                const SizedBox(width: 12),
+                Text('Correct! +$pointsToAward points'),
+              ],
+            ),
+            backgroundColor: Colors.green.shade600,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            duration: const Duration(seconds: 2),
+          ),
+        );
+      } else {
+        // Deduct points for wrong answer
+        pointsToAward = -5;
+        final newPoints = currentPoints + pointsToAward;
+        await _dbHelper.updateUserPoints(username, newPoints);
+        
+        // Show penalty message
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Row(
+              children: [
+                const Icon(Icons.cancel, color: Colors.white),
+                const SizedBox(width: 12),
+                const Text('Incorrect! -5 points'),
+              ],
+            ),
+            backgroundColor: Colors.red.shade600,
+            behavior: SnackBarBehavior.floating,
+            shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+            duration: const Duration(seconds: 2),
+          ),
+        );
       }
-    });
+    } catch (e) {
+      // Show error message if points update fails
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Row(
+            children: [
+              const Icon(Icons.error_outline, color: Colors.white),
+              const SizedBox(width: 12),
+              Text('Failed to update points: $e'),
+            ],
+          ),
+          backgroundColor: Colors.orange.shade600,
+          behavior: SnackBarBehavior.floating,
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+          duration: const Duration(seconds: 2),
+        ),
+      );
+    }
   }
 
   @override
