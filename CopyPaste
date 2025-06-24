@@ -297,11 +297,13 @@ class _HomePageState extends State<HomePage> {
             .toList();
         isSearching = true;
         
-        // Auto-scroll to first matching subject if found
+        // Only auto-scroll if we have exactly one match or if the current selection doesn't match the search
         if (filteredSubjects.isNotEmpty) {
           final firstMatch = filteredSubjects.first;
-          final index = subjects.indexOf(firstMatch);
-          if (index != -1) {
+          final currentMatchesSearch = selectedSubject.toLowerCase().contains(query);
+          
+          // Only change if we have exactly one match or if current selection doesn't match
+          if (filteredSubjects.length == 1 || !currentMatchesSearch) {
             selectedSubject = firstMatch;
           }
         }
@@ -2771,6 +2773,7 @@ class _HorizontalSubjectWheelState extends State<HorizontalSubjectWheel>
   late FixedExtentScrollController _scrollController;
   late AnimationController _animationController;
   int _selectedIndex = 0;
+  bool _isProgrammaticallyScrolling = false; // Add flag to prevent unnecessary scrolling
   
   // For infinite scrolling, we'll repeat the subjects multiple times
   static const int _repeatCount = 5; // Repeat subjects 5 times for smooth infinite scrolling
@@ -2844,21 +2847,25 @@ class _HorizontalSubjectWheelState extends State<HorizontalSubjectWheel>
   void didUpdateWidget(HorizontalSubjectWheel oldWidget) {
     super.didUpdateWidget(oldWidget);
     
-    // If selected subject changed, scroll to it
-    if (oldWidget.selectedSubject != widget.selectedSubject) {
+    // If selected subject changed and it's not the same as current, scroll to it
+    if (oldWidget.selectedSubject != widget.selectedSubject && 
+        widget.selectedSubject != widget.subjects[_selectedIndex]) {
       _scrollToSubject(widget.selectedSubject);
     }
   }
 
   void _scrollToSubject(String subject) {
     final index = widget.subjects.indexOf(subject);
-    if (index != -1) {
+    if (index != -1 && index != _selectedIndex) {
+      _isProgrammaticallyScrolling = true;
       final targetPosition = (_repeatedSubjects.length ~/ 2) + index;
       _scrollController.animateToItem(
         targetPosition,
         duration: const Duration(milliseconds: 500),
         curve: Curves.easeInOutCubic,
-      );
+      ).then((_) {
+        _isProgrammaticallyScrolling = false;
+      });
     }
   }
 
@@ -2870,6 +2877,9 @@ class _HorizontalSubjectWheelState extends State<HorizontalSubjectWheel>
   }
 
   void _onSelectedItemChanged(int index) {
+    // Don't trigger if we're programmatically scrolling
+    if (_isProgrammaticallyScrolling) return;
+    
     // Map the repeated index back to the original subject index
     int originalIndex = index % widget.subjects.length;
     
