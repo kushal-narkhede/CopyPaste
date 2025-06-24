@@ -306,6 +306,11 @@ class _HomePageState extends State<HomePage> {
           if (filteredSubjects.length == 1 || !currentMatchesSearch) {
             selectedSubject = firstMatch;
           }
+        } else {
+          // If no matches found, keep the current selection but ensure it's valid
+          if (!subjects.contains(selectedSubject)) {
+            selectedSubject = subjects.isNotEmpty ? subjects.first : "Chemistry";
+          }
         }
       }
     });
@@ -2839,13 +2844,20 @@ class _HorizontalSubjectWheelState extends State<HorizontalSubjectWheel>
     
     // Set initial position after the widget is built
     WidgetsBinding.instance.addPostFrameCallback((_) {
-      _scrollController.jumpToItem(initialPosition);
+      if (_repeatedSubjects.isNotEmpty && initialPosition < _repeatedSubjects.length) {
+        _scrollController.jumpToItem(initialPosition);
+      }
     });
   }
 
   @override
   void didUpdateWidget(HorizontalSubjectWheel oldWidget) {
     super.didUpdateWidget(oldWidget);
+    
+    // Update repeated subjects if the subjects list changed
+    if (oldWidget.subjects != widget.subjects) {
+      _repeatedSubjects = List.generate(_repeatCount, (index) => widget.subjects).expand((subjects) => subjects).toList();
+    }
     
     // If selected subject changed and it's not the same as current, scroll to it
     if (oldWidget.selectedSubject != widget.selectedSubject && 
@@ -2856,16 +2868,22 @@ class _HorizontalSubjectWheelState extends State<HorizontalSubjectWheel>
 
   void _scrollToSubject(String subject) {
     final index = widget.subjects.indexOf(subject);
-    if (index != -1 && index != _selectedIndex) {
+    if (index != -1 && index != _selectedIndex && index < widget.subjects.length) {
       _isProgrammaticallyScrolling = true;
       final targetPosition = (_repeatedSubjects.length ~/ 2) + index;
-      _scrollController.animateToItem(
-        targetPosition,
-        duration: const Duration(milliseconds: 500),
-        curve: Curves.easeInOutCubic,
-      ).then((_) {
+      
+      // Ensure target position is within bounds
+      if (targetPosition >= 0 && targetPosition < _repeatedSubjects.length) {
+        _scrollController.animateToItem(
+          targetPosition,
+          duration: const Duration(milliseconds: 500),
+          curve: Curves.easeInOutCubic,
+        ).then((_) {
+          _isProgrammaticallyScrolling = false;
+        });
+      } else {
         _isProgrammaticallyScrolling = false;
-      });
+      }
     }
   }
 
@@ -2904,18 +2922,19 @@ class _HorizontalSubjectWheelState extends State<HorizontalSubjectWheel>
           AnimatedBuilder(
             animation: _animationController,
             builder: (context, child) {
+              final gradientIndex = _selectedIndex % _gradients.length;
               return Container(
                 height: 50,
                 margin: const EdgeInsets.symmetric(horizontal: 25),
                 decoration: BoxDecoration(
                   borderRadius: BorderRadius.circular(15),
                   border: Border.all(
-                    color: _gradients[_selectedIndex % _gradients.length].withOpacity(0.8 + (_animationController.value * 0.2)),
+                    color: _gradients[gradientIndex].withOpacity(0.8 + (_animationController.value * 0.2)),
                     width: 2,
                   ),
                   boxShadow: [
                     BoxShadow(
-                      color: _gradients[_selectedIndex % _gradients.length].withOpacity(0.4 + (_animationController.value * 0.3)),
+                      color: _gradients[gradientIndex].withOpacity(0.4 + (_animationController.value * 0.3)),
                       blurRadius: 15 + (_animationController.value * 8),
                       spreadRadius: 1 + (_animationController.value * 2),
                     ),
@@ -2944,6 +2963,10 @@ class _HorizontalSubjectWheelState extends State<HorizontalSubjectWheel>
                   final originalIndex = index % widget.subjects.length;
                   final isSelected = originalIndex == _selectedIndex;
                   
+                  // Ensure indices are within bounds
+                  final gradientIndex = originalIndex % _gradients.length;
+                  final iconIndex = originalIndex % _icons.length;
+                  
                   return AnimatedContainer(
                     duration: const Duration(milliseconds: 300),
                     curve: Curves.easeOutCubic,
@@ -2952,7 +2975,7 @@ class _HorizontalSubjectWheelState extends State<HorizontalSubjectWheel>
                       borderRadius: BorderRadius.circular(15),
                       gradient: LinearGradient(
                         colors: isSelected
-                            ? [_gradients[originalIndex % _gradients.length], _gradients[originalIndex % _gradients.length].withOpacity(0.7)]
+                            ? [_gradients[gradientIndex], _gradients[gradientIndex].withOpacity(0.7)]
                             : [Colors.white.withOpacity(0.15), Colors.white.withOpacity(0.05)],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
@@ -2960,7 +2983,7 @@ class _HorizontalSubjectWheelState extends State<HorizontalSubjectWheel>
                       boxShadow: isSelected
                           ? [
                               BoxShadow(
-                                color: _gradients[originalIndex % _gradients.length].withOpacity(0.5),
+                                color: _gradients[gradientIndex].withOpacity(0.5),
                                 blurRadius: 15,
                                 offset: const Offset(0, 6),
                                 spreadRadius: 1,
@@ -2987,7 +3010,7 @@ class _HorizontalSubjectWheelState extends State<HorizontalSubjectWheel>
                                 : Colors.transparent,
                           ),
                           child: Icon(
-                            _icons[originalIndex % _icons.length],
+                            _icons[iconIndex],
                             color: isSelected ? Colors.white : Colors.white.withOpacity(0.6),
                             size: isSelected ? 30 : 26,
                           ),
