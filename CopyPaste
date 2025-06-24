@@ -2780,8 +2780,8 @@ class _HorizontalSubjectWheelState extends State<HorizontalSubjectWheel>
   int _selectedIndex = 0;
   bool _isProgrammaticallyScrolling = false; // Add flag to prevent unnecessary scrolling
   
-  // For infinite scrolling, we'll repeat the subjects multiple times
-  static const int _repeatCount = 5; // Repeat subjects 5 times for smooth infinite scrolling
+  // For infinite scrolling, we'll repeat the subjects only once
+  static const int _repeatCount = 1; // Repeat subjects only once for cleaner display
   late List<String> _repeatedSubjects;
 
   final List<Color> _gradients = [
@@ -2839,8 +2839,8 @@ class _HorizontalSubjectWheelState extends State<HorizontalSubjectWheel>
     _selectedIndex = widget.subjects.indexOf(widget.selectedSubject);
     if (_selectedIndex == -1) _selectedIndex = 0;
     
-    // Set initial position to the middle of the repeated list
-    int initialPosition = (_repeatedSubjects.length ~/ 2) + _selectedIndex;
+    // Set initial position to the selected subject
+    int initialPosition = _selectedIndex;
     
     // Set initial position after the widget is built
     WidgetsBinding.instance.addPostFrameCallback((_) {
@@ -2870,7 +2870,7 @@ class _HorizontalSubjectWheelState extends State<HorizontalSubjectWheel>
     final index = widget.subjects.indexOf(subject);
     if (index != -1 && index != _selectedIndex && index < widget.subjects.length) {
       _isProgrammaticallyScrolling = true;
-      final targetPosition = (_repeatedSubjects.length ~/ 2) + index;
+      final targetPosition = index;
       
       // Ensure target position is within bounds
       if (targetPosition >= 0 && targetPosition < _repeatedSubjects.length) {
