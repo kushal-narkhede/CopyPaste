@@ -47,7 +47,7 @@ class _HomePageState extends State<HomePage> {
   bool showScoreSummary =
       false; // New variable to control score summary visibility
   bool isQuizActive = false; // New variable to track if quiz is active
-  String selectedSubject = "Chemistry";
+  String selectedSubject = "Linguistics";
   int numberOfQuestions = 10; // New variable for question count
   File? _userProfileImage; // Add profile image state
 
