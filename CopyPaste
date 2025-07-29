@@ -19,57 +19,63 @@ public class ISSDataFetcher {
             "https://api.n2yo.com/rest/v1/satellite/positions/%d/%.4f/%.4f/%d/%d&apiKey=%s",
             satId, observerLat, observerLng, observerAlt, seconds, apiKey);
 
-        try {
-            URL url = new URL(urlStr);
-            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setRequestMethod("GET");
+        while (true) {
+            try {
+                URL url = new URL(urlStr);
+                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+                conn.setRequestMethod("GET");
 
-            BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-            StringBuilder responseStr = new StringBuilder();
-            String line;
-            while ((line = reader.readLine()) != null) {
-                responseStr.append(line);
+                BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+                StringBuilder responseStr = new StringBuilder();
+                String line;
+                while ((line = reader.readLine()) != null) {
+                    responseStr.append(line);
+                }
+                reader.close();
+
+                String jsonResponse = responseStr.toString();
+
+                // Extract latitude
+                Pattern latPattern = Pattern.compile("\"satlatitude\":\\s*([0-9.-]+)");
+                Matcher latMatcher = latPattern.matcher(jsonResponse);
+
+                // Extract longitude
+                Pattern lngPattern = Pattern.compile("\"satlongitude\":\\s*([0-9.-]+)");
+                Matcher lngMatcher = lngPattern.matcher(jsonResponse);
+
+                // Extract altitude
+                Pattern altPattern = Pattern.compile("\"sataltitude\":\\s*([0-9.-]+)");
+                Matcher altMatcher = altPattern.matcher(jsonResponse);
+
+                // Extract timestamp
+                Pattern timePattern = Pattern.compile("\"timestamp\":\\s*([0-9]+)");
+                Matcher timeMatcher = timePattern.matcher(jsonResponse);
+
+                if (latMatcher.find() && lngMatcher.find() && altMatcher.find() && timeMatcher.find()) {
+                    double latitude = Double.parseDouble(latMatcher.group(1));
+                    double longitude = Double.parseDouble(lngMatcher.group(1));
+                    double altitude = Double.parseDouble(altMatcher.group(1));
+                    long timestamp = Long.parseLong(timeMatcher.group(1));
+
+                    System.out.println("🛰️ ISS Data (Updated):");
+                    System.out.println("Latitude: " + latitude);
+                    System.out.println("Longitude: " + longitude);
+                    System.out.println("Altitude (km): " + altitude);
+                    System.out.println("Timestamp (UTC): " + timestamp);
+                    System.out.println("------------------------------");
+                } else {
+                    System.out.println("Could not parse ISS data from response");
+                    System.out.println("Raw response: " + jsonResponse);
+                }
+
+                // Wait 1 second before the next update
+                Thread.sleep(1000);
+
+            } catch (Exception e) {
+                System.out.println("Error fetching ISS data: " + e.getMessage());
+                e.printStackTrace();
+                break; // Optional: exit the loop on error
             }
-            reader.close();
-
-            // Parse JSON using regex patterns
-            String jsonResponse = responseStr.toString();
-            
-            // Extract latitude
-            Pattern latPattern = Pattern.compile("\"satlatitude\":\\s*([0-9.-]+)");
-            Matcher latMatcher = latPattern.matcher(jsonResponse);
-            
-            // Extract longitude
-            Pattern lngPattern = Pattern.compile("\"satlongitude\":\\s*([0-9.-]+)");
-            Matcher lngMatcher = lngPattern.matcher(jsonResponse);
-            
-            // Extract altitude
-            Pattern altPattern = Pattern.compile("\"sataltitude\":\\s*([0-9.-]+)");
-            Matcher altMatcher = altPattern.matcher(jsonResponse);
-            
-            // Extract timestamp
-            Pattern timePattern = Pattern.compile("\"timestamp\":\\s*([0-9]+)");
-            Matcher timeMatcher = timePattern.matcher(jsonResponse);
-
-            if (latMatcher.find() && lngMatcher.find() && altMatcher.find() && timeMatcher.find()) {
-                double latitude = Double.parseDouble(latMatcher.group(1));
-                double longitude = Double.parseDouble(lngMatcher.group(1));
-                double altitude = Double.parseDouble(altMatcher.group(1));
-                long timestamp = Long.parseLong(timeMatcher.group(1));
-
-                System.out.println("🛰️ ISS Data:");
-                System.out.println("Latitude: " + latitude);
-                System.out.println("Longitude: " + longitude);
-                System.out.println("Altitude (km): " + altitude);
-                System.out.println("Timestamp (UTC): " + timestamp);
-            } else {
-                System.out.println("Could not parse ISS data from response");
-                System.out.println("Raw response: " + jsonResponse);
-            }
-
-        } catch (Exception e) {
-            System.out.println("Error fetching ISS data: " + e.getMessage());
-            e.printStackTrace();
         }
     }
-} 
+}
