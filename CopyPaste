@@ -2,12 +2,13 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import com.google.gson.*;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class ISSDataFetcher {
 
     public static void main(String[] args) {
-        String apiKey = "YOUR_API_KEY";
+        String apiKey = "6DC8YX-7GFAH2-N5C8W6-5JFR";
         int satId = 25544;  // ISS
         double observerLat = 40.5622;  // Example: South Jordan, UT
         double observerLng = -111.9297;
@@ -31,23 +32,44 @@ public class ISSDataFetcher {
             }
             reader.close();
 
-            // Parse JSON using Gson
-            JsonObject json = JsonParser.parseString(responseStr.toString()).getAsJsonObject();
-            JsonObject position = json.getAsJsonArray("positions").get(0).getAsJsonObject();
+            // Parse JSON using regex patterns
+            String jsonResponse = responseStr.toString();
+            
+            // Extract latitude
+            Pattern latPattern = Pattern.compile("\"satlatitude\":\\s*([0-9.-]+)");
+            Matcher latMatcher = latPattern.matcher(jsonResponse);
+            
+            // Extract longitude
+            Pattern lngPattern = Pattern.compile("\"satlongitude\":\\s*([0-9.-]+)");
+            Matcher lngMatcher = lngPattern.matcher(jsonResponse);
+            
+            // Extract altitude
+            Pattern altPattern = Pattern.compile("\"sataltitude\":\\s*([0-9.-]+)");
+            Matcher altMatcher = altPattern.matcher(jsonResponse);
+            
+            // Extract timestamp
+            Pattern timePattern = Pattern.compile("\"timestamp\":\\s*([0-9]+)");
+            Matcher timeMatcher = timePattern.matcher(jsonResponse);
 
-            double latitude = position.get("satlatitude").getAsDouble();
-            double longitude = position.get("satlongitude").getAsDouble();
-            double altitude = position.get("sataltitude").getAsDouble();
-            long timestamp = position.get("timestamp").getAsLong();
+            if (latMatcher.find() && lngMatcher.find() && altMatcher.find() && timeMatcher.find()) {
+                double latitude = Double.parseDouble(latMatcher.group(1));
+                double longitude = Double.parseDouble(lngMatcher.group(1));
+                double altitude = Double.parseDouble(altMatcher.group(1));
+                long timestamp = Long.parseLong(timeMatcher.group(1));
 
-            System.out.println("🛰️ ISS Data:");
-            System.out.println("Latitude: " + latitude);
-            System.out.println("Longitude: " + longitude);
-            System.out.println("Altitude (km): " + altitude);
-            System.out.println("Timestamp (UTC): " + timestamp);
+                System.out.println("🛰️ ISS Data:");
+                System.out.println("Latitude: " + latitude);
+                System.out.println("Longitude: " + longitude);
+                System.out.println("Altitude (km): " + altitude);
+                System.out.println("Timestamp (UTC): " + timestamp);
+            } else {
+                System.out.println("Could not parse ISS data from response");
+                System.out.println("Raw response: " + jsonResponse);
+            }
 
         } catch (Exception e) {
             System.out.println("Error fetching ISS data: " + e.getMessage());
+            e.printStackTrace();
         }
     }
-}
+} 
