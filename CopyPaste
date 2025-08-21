@@ -1,100 +1,63 @@
-import java.io.BufferedReader;
-import java.io.InputStreamReader;
-import java.net.HttpURLConnection;
-import java.net.URL;
-import java.util.Scanner;
-import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.regex.Matcher;
-import java.util.regex.Pattern;
+using System.Collections.Generic;
+using UnityEngine;
 
-public class ISSDataFetcher {
+public class AddRedWallsCommand : MonoBehaviour
+{
+    [SerializeField] private GameObject ground;
 
-    private static final AtomicBoolean running = new AtomicBoolean(true);
+    void Start()
+    {
+        if (ground == null)
+        {
+            Debug.LogWarning("The ground object was not assigned.");
+            return;
+        }
 
-    public static void clearConsole() {
-        System.out.print("\033[H\033[2J");
-        System.out.flush();
-    }
+        // Get the ground's bounds
+        Renderer groundRenderer = ground.GetComponent<Renderer>();
+        if (groundRenderer == null)
+        {
+            Debug.LogWarning("The ground object does not have a Renderer component.");
+            return;
+        }
 
-    public static void main(String[] args) {
-        String apiKey = "6DC8YX-7GFAH2-N5C8W6-5JFR";
-        int satId = 25544;
-        double observerLat = 40.5622;
-        double observerLng = -111.9297;
-        int observerAlt = 1300;
-        int seconds = 1;
+        Bounds groundBounds = groundRenderer.bounds;
 
-        String urlStr = String.format(
-            "https://api.n2yo.com/rest/v1/satellite/positions/%d/%.4f/%.4f/%d/%d&apiKey=%s",
-            satId, observerLat, observerLng, observerAlt, seconds, apiKey);
+        // Calculate wall positions and dimensions
+        float wallHeight = 10f;
+        float wallThickness = 1f;
+        Vector3 groundCenter = groundBounds.center;
+        Vector3 groundSize = groundBounds.size;
 
-        // Thread to watch for 'e' key to exit
-        Thread exitListener = new Thread(() -> {
-            Scanner scanner = new Scanner(System.in);
-            while (running.get()) {
-                String input = scanner.nextLine();
-                if ("e".equalsIgnoreCase(input.trim())) {
-                    running.set(false);
-                    System.out.println("👋 Exiting program as requested.");
-                }
-            }
-        });
-        exitListener.start();
+        // Create walls
+        List<GameObject> walls = new List<GameObject>();
+        walls.Add(CreateWall("FrontWall", new Vector3(groundCenter.x, wallHeight / 2, groundCenter.z + groundSize.z / 2 + wallThickness / 2), new Vector3(groundSize.x, wallHeight, wallThickness)));
+        walls.Add(CreateWall("BackWall", new Vector3(groundCenter.x, wallHeight / 2, groundCenter.z - groundSize.z / 2 - wallThickness / 2), new Vector3(groundSize.x, wallHeight, wallThickness)));
+        walls.Add(CreateWall("LeftWall", new Vector3(groundCenter.x - groundSize.x / 2 - wallThickness / 2, wallHeight / 2, groundCenter.z), new Vector3(wallThickness, wallHeight, groundSize.z)));
+        walls.Add(CreateWall("RightWall", new Vector3(groundCenter.x + groundSize.x / 2 + wallThickness / 2, wallHeight / 2, groundCenter.z), new Vector3(wallThickness, wallHeight, groundSize.z)));
 
-        while (running.get()) {
-            try {
-                URL url = new URL(urlStr);
-                HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-                conn.setRequestMethod("GET");
+        // Apply red material to walls
+        Material redMaterial = new Material(Shader.Find("Standard"));
+        redMaterial.color = Color.red;
 
-                BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-                StringBuilder responseStr = new StringBuilder();
-                String line;
-                while ((line = reader.readLine()) != null) {
-                    responseStr.append(line);
-                }
-                reader.close();
-
-                String jsonResponse = responseStr.toString();
-
-                Pattern latPattern = Pattern.compile("\"satlatitude\":\\s*([0-9.-]+)");
-                Pattern lngPattern = Pattern.compile("\"satlongitude\":\\s*([0-9.-]+)");
-                Pattern altPattern = Pattern.compile("\"sataltitude\":\\s*([0-9.-]+)");
-                Pattern timePattern = Pattern.compile("\"timestamp\":\\s*([0-9]+)");
-
-                Matcher latMatcher = latPattern.matcher(jsonResponse);
-                Matcher lngMatcher = lngPattern.matcher(jsonResponse);
-                Matcher altMatcher = altPattern.matcher(jsonResponse);
-                Matcher timeMatcher = timePattern.matcher(jsonResponse);
-
-                clearConsole();
-
-                if (latMatcher.find() && lngMatcher.find() && altMatcher.find() && timeMatcher.find()) {
-                    double latitude = Double.parseDouble(latMatcher.group(1));
-                    double longitude = Double.parseDouble(lngMatcher.group(1));
-                    double altitude = Double.parseDouble(altMatcher.group(1));
-                    long timestamp = Long.parseLong(timeMatcher.group(1));
-
-                    System.out.println("🛰️ ISS Data (Updated):");
-                    System.out.println("Latitude: " + latitude);
-                    System.out.println("Longitude: " + longitude);
-                    System.out.println("Altitude (km): " + altitude);
-                    System.out.println("Timestamp (UTC): " + timestamp);
-                    System.out.println("Press 'e' then Enter to exit.");
-                } else {
-                    System.out.println("Could not parse ISS data from response");
-                    System.out.println("Raw response: " + jsonResponse);
-                }
-
-                Thread.sleep(1000);
-
-            } catch (Exception e) {
-                System.out.println("Error fetching ISS data: " + e.getMessage());
-                e.printStackTrace();
-                break;
+        foreach (var wall in walls)
+        {
+            Renderer wallRenderer = wall.GetComponent<Renderer>();
+            if (wallRenderer != null)
+            {
+                wallRenderer.material = redMaterial;
             }
         }
 
-        System.exit(0);  // Clean shutdown
+        Debug.Log("Red-colored walls were added around the borders of the ground.");
+    }
+
+    private GameObject CreateWall(string name, Vector3 position, Vector3 scale)
+    {
+        GameObject wall = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        wall.name = name;
+        wall.transform.position = position;
+        wall.transform.localScale = scale;
+        return wall;
     }
 }
