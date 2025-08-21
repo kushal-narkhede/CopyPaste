@@ -1,9 +1,18 @@
 using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class AddRedWallsCommand : MonoBehaviour
 {
     [SerializeField] private GameObject ground;
+    
+    // Career names for the shelves
+    private string[] careerNames = {
+        "Software Engineer", "Data Scientist", "Product Manager", "UX Designer",
+        "DevOps Engineer", "Frontend Developer", "Backend Developer", "Mobile Developer",
+        "Game Developer", "AI Engineer", "Cybersecurity Analyst", "Cloud Architect",
+        "Database Administrator", "Network Engineer", "System Administrator"
+    };
 
     void Start()
     {
@@ -36,20 +45,151 @@ public class AddRedWallsCommand : MonoBehaviour
         walls.Add(CreateWall("LeftWall", new Vector3(groundCenter.x - groundSize.x / 2 - wallThickness / 2, wallHeight / 2, groundCenter.z), new Vector3(wallThickness, wallHeight, groundSize.z)));
         walls.Add(CreateWall("RightWall", new Vector3(groundCenter.x + groundSize.x / 2 + wallThickness / 2, wallHeight / 2, groundCenter.z), new Vector3(wallThickness, wallHeight, groundSize.z)));
 
-        // Apply red material to walls
-        Material redMaterial = new Material(Shader.Find("Standard"));
-        redMaterial.color = Color.red;
+        // Apply reed material to walls (brownish-green color)
+        Material reedMaterial = new Material(Shader.Find("Standard"));
+        reedMaterial.color = new Color(0.4f, 0.6f, 0.3f); // Reed color (brownish-green)
 
         foreach (var wall in walls)
         {
             Renderer wallRenderer = wall.GetComponent<Renderer>();
             if (wallRenderer != null)
             {
-                wallRenderer.material = redMaterial;
+                wallRenderer.material = reedMaterial;
             }
         }
 
-        Debug.Log("Red-colored walls were added around the borders of the ground.");
+        // Add shamall shelves to all walls
+        AddShelvesToWalls(walls, groundBounds);
+
+        Debug.Log("Reed-colored walls with shamall shelves were added around the borders of the ground.");
+    }
+
+    private void AddShelvesToWalls(List<GameObject> walls, Bounds groundBounds)
+    {
+        int careerIndex = 0;
+        
+        foreach (var wall in walls)
+        {
+            Renderer wallRenderer = wall.GetComponent<Renderer>();
+            if (wallRenderer == null) continue;
+
+            Bounds wallBounds = wallRenderer.bounds;
+            
+            // Calculate shelf positions along the wall
+            int shelvesPerWall = 5; // Number of shelves per wall
+            float shelfSpacing = wallBounds.size.x / (shelvesPerWall + 1);
+            
+            for (int i = 0; i < shelvesPerWall && careerIndex < careerNames.Length; i++)
+            {
+                // Calculate shelf position
+                Vector3 shelfPosition = wall.transform.position;
+                float offset = (i + 1) * shelfSpacing - wallBounds.size.x / 2;
+                
+                // Adjust position based on wall orientation
+                if (wall.name.Contains("Front") || wall.name.Contains("Back"))
+                {
+                    shelfPosition.x += offset;
+                    shelfPosition.y = wallBounds.min.y + 2f; // 2 units above ground
+                    shelfPosition.z = wall.name.Contains("Front") ? 
+                        wallBounds.min.z + 0.5f : wallBounds.max.z - 0.5f;
+                }
+                else // Left or Right wall
+                {
+                    shelfPosition.z += offset;
+                    shelfPosition.y = wallBounds.min.y + 2f; // 2 units above ground
+                    shelfPosition.x = wall.name.Contains("Left") ? 
+                        wallBounds.min.x + 0.5f : wallBounds.max.x - 0.5f;
+                }
+
+                // Create shelf
+                GameObject shelf = CreateShelf(careerNames[careerIndex], shelfPosition);
+                careerIndex++;
+            }
+        }
+    }
+
+    private GameObject CreateShelf(string careerName, Vector3 position)
+    {
+        // Create shelf base
+        GameObject shelf = GameObject.CreatePrimitive(PrimitiveType.Cube);
+        shelf.name = "Shelf_" + careerName.Replace(" ", "_");
+        shelf.transform.position = position;
+        shelf.transform.localScale = new Vector3(2f, 0.2f, 1f);
+        
+        // Apply shelf material (wooden color)
+        Material shelfMaterial = new Material(Shader.Find("Standard"));
+        shelfMaterial.color = new Color(0.6f, 0.4f, 0.2f); // Wooden brown
+        
+        Renderer shelfRenderer = shelf.GetComponent<Renderer>();
+        if (shelfRenderer != null)
+        {
+            shelfRenderer.material = shelfMaterial;
+        }
+
+        // Add career name text
+        CreateCareerText(shelf, careerName, position);
+
+        // Add click functionality
+        AddClickFunctionality(shelf, careerName);
+
+        return shelf;
+    }
+
+    private void CreateCareerText(GameObject shelf, string careerName, Vector3 position)
+    {
+        // Create a canvas for the text
+        GameObject canvasObj = new GameObject("Canvas_" + careerName.Replace(" ", "_"));
+        canvasObj.transform.SetParent(shelf.transform);
+        canvasObj.transform.position = position + Vector3.up * 0.5f;
+        
+        Canvas canvas = canvasObj.AddComponent<Canvas>();
+        canvas.renderMode = RenderMode.WorldSpace;
+        canvas.worldCamera = Camera.main;
+        
+        // Add canvas scaler
+        CanvasScaler scaler = canvasObj.AddComponent<CanvasScaler>();
+        scaler.uiScaleMode = CanvasScaler.ScaleMode.ScaleWithScreenSize;
+        scaler.referenceResolution = new Vector2(1920, 1080);
+        
+        // Create text object
+        GameObject textObj = new GameObject("CareerText");
+        textObj.transform.SetParent(canvasObj.transform);
+        textObj.transform.localPosition = Vector3.zero;
+        textObj.transform.localScale = new Vector3(0.01f, 0.01f, 1f);
+        
+        Text text = textObj.AddComponent<Text>();
+        text.text = careerName;
+        text.font = Resources.GetBuiltinResource<Font>("Arial.ttf");
+        text.fontSize = 24;
+        text.color = Color.white;
+        text.alignment = TextAnchor.MiddleCenter;
+        
+        // Add background for better visibility
+        GameObject backgroundObj = new GameObject("Background");
+        backgroundObj.transform.SetParent(textObj.transform);
+        backgroundObj.transform.localPosition = Vector3.zero;
+        backgroundObj.transform.localScale = Vector3.one;
+        
+        Image background = backgroundObj.AddComponent<Image>();
+        background.color = new Color(0, 0, 0, 0.7f);
+        
+        RectTransform textRect = textObj.GetComponent<RectTransform>();
+        RectTransform bgRect = backgroundObj.GetComponent<RectTransform>();
+        textRect.sizeDelta = new Vector2(200, 50);
+        bgRect.sizeDelta = new Vector2(200, 50);
+    }
+
+    private void AddClickFunctionality(GameObject shelf, string careerName)
+    {
+        // Add collider if not present
+        if (shelf.GetComponent<Collider>() == null)
+        {
+            shelf.AddComponent<BoxCollider>();
+        }
+        
+        // Add click handler
+        ClickHandler clickHandler = shelf.AddComponent<ClickHandler>();
+        clickHandler.careerName = careerName;
     }
 
     private GameObject CreateWall(string name, Vector3 position, Vector3 scale)
@@ -59,5 +199,19 @@ public class AddRedWallsCommand : MonoBehaviour
         wall.transform.position = position;
         wall.transform.localScale = scale;
         return wall;
+    }
+}
+
+// Click handler component for career selection
+public class ClickHandler : MonoBehaviour
+{
+    public string careerName;
+    
+    void OnMouseDown()
+    {
+        Debug.Log($"Welcome to {careerName} career!");
+        
+        // You can also show this in the UI if you have a UI manager
+        // For now, it just logs to console
     }
 }
